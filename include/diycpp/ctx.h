@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <typeindex>
 #include <exception>
+#include <map>
  
 namespace diy  {
 
