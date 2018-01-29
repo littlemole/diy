@@ -277,6 +277,9 @@ public:
 	}
 };
 
+/*
+-- considered evil:
+
 template<class T, class P, class ... Args>
 class Creator<T(P&, Args...)>
 {
@@ -289,7 +292,7 @@ public:
 		return Creator<T(Args...)>::create(ctx, std::forward<VArgs>(args)..., *p);
 	}
 };
-
+*/
 
 // Constructor Impl
 
@@ -392,7 +395,7 @@ public:
 
 	provider(Context& ctx)
     {
-		ctx.registerFactory<this->type>(
+		ctx.registerFactory(
 			std::type_index(typeid(type)),
 			new Provider<type>(
 				new ConstructorImpl<T>
@@ -403,7 +406,7 @@ public:
 	template<class I>
 	provider(Constructor<I>* ctor, Context& ctx)
 	{
-		ctx.registerFactory<this->type>(
+		ctx.registerFactory(
 			std::type_index(typeid(I)),
 			new Provider<type>(ctor)
 		);
@@ -416,7 +419,7 @@ class ctx_value
 {
 public:
 
-	typedef typename returns<T>::type type;
+	typedef T type;
 	typedef std::shared_ptr<T> Ptr;
 
 	ctx_value(T* t)
@@ -441,7 +444,7 @@ private:
 
     void register_value(Context& ctx, const std::type_index& idx, Ptr ptr)
     {
-    	ctx.registerFactory<this->type>(
+    	ctx.registerFactory(
     		idx,
 			new FactoryImpl<type>(ptr)
 		);

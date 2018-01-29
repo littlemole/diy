@@ -16,22 +16,25 @@ include_directories(include)
 file(GLOB HEADERS "include/diycpp/*.h")
 
 add_library(diycpp INTERFACE)
+target_include_directories(diycpp INTERFACE include/)
 
-add_executable(Tests t/test.cpp)
+add_executable(basic_test t/test.cpp)
+add_executable(raw_test t/raw.cpp)
 
 IF (UNIX)
 
-target_link_libraries(Tests gtest diycpp pthread)
+target_link_libraries(basic_test gtest diycpp pthread)
+target_link_libraries(raw_test gtest diycpp pthread)
 
 ELSEIF (WIN32)
 
-target_include_directories(diycpp INTERFACE include/)
-target_link_libraries(Tests ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
-
+target_link_libraries(basic_test ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
+target_link_libraries(raw_test ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
 
 ENDIF ()
 
-add_test(NAME AllTests COMMAND Tests)
+add_test(NAME BasicTest COMMAND basic_test)
+add_test(NAME RawTest COMMAND raw_test)
  
 install(FILES ${HEADERS} DESTINATION include/diycpp)
 

@@ -8,7 +8,7 @@
 #include <functional>
 #include "diycpp/ctx.h"
   
-class RawTest : public ::testing::Test {
+class ProviderTest : public ::testing::Test {
  protected:
 
   static void SetUpTestCase() {
@@ -61,9 +61,6 @@ public:
 		invocation_count++;
 	}
 
-
-private:
-
 	std::shared_ptr<Logger> logger_;
 };
 
@@ -80,44 +77,53 @@ public:
 		controller_->handler(value);
 	}
 
-private:
 	std::shared_ptr<TestController> controller_;
 };
 
 DIY_DEFINE_CONTEXT()
 
 
+diy::provider<TestController(Logger)> TestControllerComponent(
+	diy::constructor<TestController(Logger)>()
+);
 
-TEST_F(RawTest, rawApiTest) 
+diy::provider<MyApp(TestController)> MyAppComponent;
+
+
+TEST_F(ProviderTest, ValueMaintainsOwnLifetime) 
 {
-	// low level context setup interface
+    // define a shared_ptr to Logger elsewhere:
+    auto theLogger = std::make_shared<Logger>();
 
-    diy::context().registerFactory(
-        std::type_index(typeid(Logger)),
-        new diy::FactoryImpl<Logger>(new diy::ConstructorImpl<Logger()>())
-    );
+    // add the shared_ptr to context:
+    diy::ctx_value<Logger> loggerComponent(theLogger);
+    
+    // run test
+    {
+        auto myApp = diy::inject<MyApp>();
+        myApp->run(42);
 
-    diy::context().registerFactory(
-        std::type_index(typeid(TestController)),
-        new diy::FactoryImpl<TestController>(new diy::ConstructorImpl<TestController(Logger)>())
-    );
+        // check results
+        auto tc = myApp->controller_;
+        auto l = tc->logger_;
 
-    diy::context().registerFactory(
-        std::type_index(typeid(MyApp)),
-        new diy::FactoryImpl<MyApp>(new diy::ConstructorImpl<MyApp(TestController)>())
-    );
+        EXPECT_EQ(1,tc->invocation_count);
+        EXPECT_EQ(1,l->invocation_count);
+        EXPECT_STREQ("value:42",l->buffer.c_str());
+    }
+    // run test again
+    {
+        auto myApp = diy::inject<MyApp>();
+        myApp->run(43);
 
-	// use context after setup
+        // check results
+        auto tc = myApp->controller_;
+        auto l = tc->logger_;
 
-	auto myApp = diy::inject<MyApp>();
-	myApp->run(42);
-
-	auto tc = diy::inject<TestController>();
-	auto l = diy::inject<Logger>();
-
-	EXPECT_EQ(1,tc->invocation_count);
-	EXPECT_EQ(1,l->invocation_count);
-	EXPECT_STREQ("value:42",l->buffer.c_str());
+        EXPECT_EQ(1,tc->invocation_count);
+        EXPECT_EQ(2,l->invocation_count);
+        EXPECT_STREQ("value:42value:43",l->buffer.c_str());
+    }
 }
 
 

@@ -8,7 +8,7 @@
 #include <functional>
 #include "diycpp/ctx.h"
   
-class RawTest : public ::testing::Test {
+class ProviderTest : public ::testing::Test {
  protected:
 
   static void SetUpTestCase() {
@@ -61,9 +61,6 @@ public:
 		invocation_count++;
 	}
 
-
-private:
-
 	std::shared_ptr<Logger> logger_;
 };
 
@@ -80,44 +77,45 @@ public:
 		controller_->handler(value);
 	}
 
-private:
 	std::shared_ptr<TestController> controller_;
 };
 
 DIY_DEFINE_CONTEXT()
 
 
+diy::provider<Logger()> LoggerComponent;
 
-TEST_F(RawTest, rawApiTest) 
+diy::provider<TestController(Logger)> TestControllerComponent(
+	diy::constructor<TestController(Logger)>()
+);
+
+diy::provider<MyApp(TestController)> MyAppComponent;
+
+
+TEST_F(ProviderTest, ProvideAlwaysInjectsNewInstance) 
 {
-	// low level context setup interface
+    {
+        auto myApp = diy::inject<MyApp>();
+        myApp->run(42);
 
-    diy::context().registerFactory(
-        std::type_index(typeid(Logger)),
-        new diy::FactoryImpl<Logger>(new diy::ConstructorImpl<Logger()>())
-    );
+        auto tc = myApp->controller_;
+        auto l = tc->logger_;
 
-    diy::context().registerFactory(
-        std::type_index(typeid(TestController)),
-        new diy::FactoryImpl<TestController>(new diy::ConstructorImpl<TestController(Logger)>())
-    );
+        EXPECT_EQ(1,tc->invocation_count);
+        EXPECT_EQ(1,l->invocation_count);
+        EXPECT_STREQ("value:42",l->buffer.c_str());
+    }
+    {
+        auto myApp = diy::inject<MyApp>();
+        myApp->run(42);
 
-    diy::context().registerFactory(
-        std::type_index(typeid(MyApp)),
-        new diy::FactoryImpl<MyApp>(new diy::ConstructorImpl<MyApp(TestController)>())
-    );
+        auto tc = myApp->controller_;
+        auto l = tc->logger_;
 
-	// use context after setup
-
-	auto myApp = diy::inject<MyApp>();
-	myApp->run(42);
-
-	auto tc = diy::inject<TestController>();
-	auto l = diy::inject<Logger>();
-
-	EXPECT_EQ(1,tc->invocation_count);
-	EXPECT_EQ(1,l->invocation_count);
-	EXPECT_STREQ("value:42",l->buffer.c_str());
+        EXPECT_EQ(1,tc->invocation_count);
+        EXPECT_EQ(1,l->invocation_count);
+        EXPECT_STREQ("value:42",l->buffer.c_str());
+    }
 }
 
 

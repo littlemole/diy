@@ -96,16 +96,23 @@ diy::singleton<MyApp(TestController)> MyAppComponent;
 
 TEST_F(BasicTest, SimpleDI) 
 {
+	{
+		auto myApp = diy::inject<MyApp>();
+		myApp->run(42);
+	}
+	{
+		auto myApp = diy::inject<MyApp>();
+		myApp->run(43);
+	}
 
-	auto myApp = diy::inject<MyApp>();
-	myApp->run(42);
+	// assert results
 
 	auto tc = diy::inject<TestController>();
 	auto l = diy::inject<Logger>();
 
-	EXPECT_EQ(1,tc->invocation_count);
-	EXPECT_EQ(1,l->invocation_count);
-	EXPECT_STREQ("value:42",l->buffer.c_str());
+	EXPECT_EQ(2,tc->invocation_count);
+	EXPECT_EQ(2,l->invocation_count);
+	EXPECT_STREQ("value:42value:43",l->buffer.c_str());
 }
 
 
