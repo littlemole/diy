@@ -32,8 +32,6 @@ target_link_libraries(Tests ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
 ENDIF ()
 
 add_test(NAME AllTests COMMAND Tests)
-
-#file(COPY pem DESTINATION .)
  
 install(FILES ${HEADERS} DESTINATION include/diycpp)
 
