@@ -85,8 +85,8 @@ default context, everything can also be called on a specific context.
     using namespace diy;
 
     Context myContext(0);
-    singleton<TestComponent(Dependency)>(myContext singletonComponent;
-    singleton<Dependency()>(myContext) testComponent;
+    singleton<TestComponent(Dependency)> singletonComponent(myContext) ;
+    singleton<Dependency()> testComponent(myContext) ;
 
     auto tc = inject<TestComponent>(myContext);
     tc->some_method_using_dependencies();
@@ -101,7 +101,7 @@ contexts can inherit, for example a local context inheriting from default contex
 
     // inherit context
     Context myContext(&context());
-    singleton<TestComponent(Dependency)>(myContext) testComponent;
+    singleton<TestComponent(Dependency)> testComponent(myContext) ;
 
     // this will resolve:
     auto tc = inject<TestComponent>(myContext);
