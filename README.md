@@ -97,7 +97,7 @@ contexts can inherit, for example a local context inheriting from default contex
     using namespace diy;
 
     // dependency declared in default context
-    singleton<Dependency()>() singletonComponent;
+    singleton<Dependency()> singletonComponent;
 
     // inherit context
     Context myContext(&context());
