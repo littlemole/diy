@@ -177,6 +177,16 @@ public:
 		theMap_[idx] = std::unique_ptr<Factory>(f);
 	}
 
+	template<class T>
+	void registerFactory(Factory* f)
+	{
+
+		theMap_[std::type_index(typeid(typename returns<T>::type))] = std::unique_ptr<Factory>(f);
+	}
+
+	template<class T>
+	void registerFactory();
+
 	void clear()
 	{
 		theMap_.clear();
@@ -333,6 +343,15 @@ public:
 };
 
 
+template<class T>
+void Context::registerFactory()
+{
+	registerFactory<T>(
+		new diy::FactoryImpl<typename returns<T>::type>(
+			new diy::ConstructorImpl<T>()
+		)
+	);
+}
 
 template<class T>
 ConstructorImpl<T>* constructor()

@@ -92,20 +92,15 @@ TEST_F(RawTest, rawApiTest)
 {
 	// low level context setup interface
 
-    diy::context().registerFactory(
-        std::type_index(typeid(Logger)),
-        new diy::FactoryImpl<Logger>(new diy::ConstructorImpl<Logger()>())
+    diy::context().registerFactory<Logger()>(
+        new diy::FactoryImpl<Logger>(
+			new diy::ConstructorImpl<Logger()>()
+		)
     );
 
-    diy::context().registerFactory(
-        std::type_index(typeid(TestController)),
-        new diy::FactoryImpl<TestController>(new diy::ConstructorImpl<TestController(Logger)>())
-    );
+    diy::context().registerFactory<TestController(Logger)>();
 
-    diy::context().registerFactory(
-        std::type_index(typeid(MyApp)),
-        new diy::FactoryImpl<MyApp>(new diy::ConstructorImpl<MyApp(TestController)>())
-    );
+    diy::context().registerFactory<MyApp(TestController)>();
 
 	// use context after setup
 
