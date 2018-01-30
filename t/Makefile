@@ -1,16 +1,17 @@
 DEBUG = -g 
 release : override DEBUG = -O3
 
-DEFAULT_OPTS = -std=c++14
-DEFAULT_LIBS = 
-
-ifeq ($(CXX),clang++-5.0)
+# if not g++ we assume clang++
 DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
 DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+
+ifeq ($(CXX),g++)
+DEFAULT_OPTS = -std=c++14
+DEFAULT_LIBS = 
 endif
 
 OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
-CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(OPTIONS) 
+CPPFLAGS = -Wall -I../include $(DEBUG) $(OPTIONS) 
 
 TESTFLAGS = -g
 

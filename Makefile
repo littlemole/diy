@@ -5,6 +5,8 @@ PREFIX=/usr/local
 LIBNAME = diycpp
 LIBINC = ./include
 
+PWD = $(shell pwd)
+
 all: test
 
 test-build: ## make the test binaries
@@ -17,7 +19,7 @@ clean: ## cleans up build artefacts
 		
 	
 test: test-build ## runs unit tests
-	bash -c 'BINS=$$(ls t/build/*.bin); for i in $$BINS; do $$i; if [ "$$?" != "0" ]; then echo "testrunner FAILED"; break; fi; done; echo "testrunner OK";'
+	bash -c 'BINS=$$(ls t/build/*.bin); for i in $$BINS; do $$i; if [ "$$?" != "0" ]; then echo "testrunner FAILED"; exit 1; fi; done; echo "testrunner OK";'
 
 
 build: 
@@ -29,9 +31,30 @@ build:
 install: 
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
+	mkdir -p $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	
 remove: 
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	
+image: 
+	docker build -t littlemole/diycpp . -fDockerfile  --build-arg CXX=$(CXX)
+
+
+# docker stable testing environment
+
+clean-image: 
+	docker build -t littlemole/diycpp . --no-cache -fDockerfile --build-arg CXX=$(CXX)
+		
+run: image-remove image 
+	docker run --name diypp -d -e COMPILER=$(CXX) -v "$(PWD):/opt/workspace/diy"  littlemole/diycpp
+                                        
+bash: image-remove image
+	docker run --name diypp -ti -e COMPILER=$(CXX) -v "$(PWD):/opt/workspace/diy"  littlemole/diycpp bash
+
+stop: 
+	-docker stop diypp
+	
+image-remove: stop 
+	-docker rm diypp
