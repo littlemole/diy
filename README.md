@@ -44,7 +44,8 @@ within main or even in some init() function called from main.
 ### as singleton
 
 ```cpp
-        // declare as global statics, in main or in some init() function called from main
+        // declare as global statics, in main or in some 
+        // init() function called from main
         diy::singleton<TestComponent(Dependency)> testComponent;
         diy::singleton<Dependency()> dependencyComponent;
 ```
@@ -73,7 +74,7 @@ within main or even in some init() function called from main.
     Application depends {
         singleton<TestComponent(Dependency)>(),
         singleton<Dependency()>()
-    }
+    };
 ```
 
 # context inheritance and the default context
@@ -113,7 +114,7 @@ contexts can inherit, for example a local context inheriting from default contex
 - build clean obj tree
 - constructor injection only
 - no dependencies
-- non invasive use plain testable c++ objects
+- non invasive - use plain testable c++ objects
 - context inheritance
 - no runtime parsing of xml files
 
