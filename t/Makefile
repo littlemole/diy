@@ -17,7 +17,7 @@ TESTFLAGS = -g
 
 TEST_SRC   = .
 TEST_BUILD = ./build
-TEST_LIBS  = /usr/lib/libgtest.a -lpthread
+TEST_LIBS  = /usr/lib/libgtest.a -lpthread $(DEFAULT_LIBS)
 
 # Objects for the test executable
 TEST_SRCFILESABS = $(shell ls $(TEST_SRC)/*.cpp)
