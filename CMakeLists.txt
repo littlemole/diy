@@ -32,9 +32,9 @@ endmacro()
 # clang support
 ############################################
 
-set(LINKERFLAGS "")
-set(STDLIB "")
-set(FLAGS "")
+set(LINKERFLAGS " ")
+set(STDLIB " ")
+set(FLAGS " ")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(STDLIB "c++abi")
