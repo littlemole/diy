@@ -33,7 +33,7 @@ endmacro()
 ############################################
 
 set(LINKERFLAGS " ")
-set(STDLIB " ")
+set(STDLIB "")
 set(FLAGS " ")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
