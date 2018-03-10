@@ -52,7 +52,6 @@ include_directories(${GTEST_INCLUDE_DIR})
 file(GLOB HEADERS "include/diycpp/*.h")
 
 add_library(diycpp INTERFACE)
-AddCompilerFlags(diycpp ${FLAGS})
 target_include_directories(diycpp INTERFACE include/)
 
 add_executable(basic_test t/test.cpp)
