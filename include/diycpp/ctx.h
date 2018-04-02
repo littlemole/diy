@@ -5,6 +5,7 @@
 #include <typeindex>
 #include <exception>
 #include <map>
+#include <memory>
  
 namespace diy  {
 
@@ -55,7 +56,7 @@ public:
 	{}
 };
 
-Context& context();
+//Context& context();
 
 // Constructor API
 
@@ -142,7 +143,7 @@ public:
     /**
      * construct a new IOC Context.
      */
-    Context() : parentCtx_(&context())
+    Context() : parentCtx_(0)
     {
     }
 
@@ -192,7 +193,7 @@ public:
 		theMap_.clear();
 	}
 
-private:
+protected:
 
 	template<class T>
 	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx);
@@ -212,6 +213,7 @@ private:
 template<class T>
 std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
 {
+	std::cout << "resolve " << typeid(T).name() << std::endl;
     // delegate to parent ctx if not avail
     if( theMap_.count(idx) == 0 )
     {
@@ -219,6 +221,7 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
         {
             return parentCtx_->resolve<T>(idx,ctx);
         }
+		std::cout << "error resolving " << typeid(T).name() << std::endl;
         throw ContextEx();
     }
 
@@ -230,14 +233,8 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
 }
 
 
-Context& context();
+//Context& context();
 
-
-template<class T>
-std::shared_ptr<T> inject()
-{
-    return context().resolve<T>();
-}
 
 template<class T>
 std::shared_ptr<T> inject(Context& ctx)
@@ -245,11 +242,6 @@ std::shared_ptr<T> inject(Context& ctx)
 	return ctx.resolve<T>();
 }
 
-template<class T>
-std::shared_ptr<T> inject( const std::type_index& idx)
-{
-    return context().resolve<T>(idx);
-}
 
 template<class T>
 std::shared_ptr<T> inject(const std::type_index& idx, Context& ctx)
@@ -374,26 +366,21 @@ public:
 	typedef typename returns<T>::type type;
 
     singleton()
-		: singleton(context())
+		: ti_(typeid(type))
     {}
 
 	template<class I>
-	singleton(Constructor<I>* ctor)
-		: singleton(ctor, context())
+	singleton()
+		: ti_(typeid(I))
 	{}
 
-	singleton(Context& ctx)
-		: singleton(new ConstructorImpl<T>,ctx)
-	{}
-
-	template<class I>
-	singleton(Constructor<I>* ctor, Context& ctx)
+	void ctx_register(Context* ctx)
 	{
-		ctx.registerFactory(
-			std::type_index(typeid(I)),
-			new FactoryImpl<type>(ctor)
-		);
+		ctx->registerFactory( ti_, new FactoryImpl<type>(new ConstructorImpl<T>) );
 	}
+
+private:	
+	std::type_index ti_;
 };
 
 
@@ -405,32 +392,21 @@ public:
 	typedef typename returns<T>::type type;
 
 	provider()
-		: provider(context())
-	{}
+		: ti_(typeid(type))
+    {}
 
 	template<class I>
-	provider(Constructor<I>* ctor)
-		: provider(ctor,context())
+	provider()
+		: ti_(typeid(I))
 	{}
 
-	provider(Context& ctx)
-    {
-		ctx.registerFactory(
-			std::type_index(typeid(type)),
-			new Provider<type>(
-				new ConstructorImpl<T>
-			)
-		);
-    }
-
-	template<class I>
-	provider(Constructor<I>* ctor, Context& ctx)
+	void ctx_register(Context* ctx)
 	{
-		ctx.registerFactory(
-			std::type_index(typeid(I)),
-			new Provider<type>(ctor)
-		);
+		ctx->registerFactory( ti_, new Provider<type>(new ConstructorImpl<T>) );
 	}
+	
+private:	
+	std::type_index ti_;
 };
 
 
@@ -439,59 +415,70 @@ class ctx_value
 {
 public:
 
-	typedef T type;
+	typedef T type;	
 	typedef std::shared_ptr<T> Ptr;
 
-	ctx_value(T* t)
-		: ctx_value(t,context())
+	ctx_value(T* t )
+		: ti_(std::type_index(typeid(type))),
+		  ptr_(t )
+    {}
+
+	ctx_value(Ptr t )
+		: ti_(std::type_index(typeid(type))),
+		  ptr_(t )
 	{}
 
-	ctx_value(Ptr t)
-		: ctx_value(t, context())
-	{}
-
-	ctx_value(T* t, Context& ctx )
-    {
-		register_value(ctx,std::type_index(typeid(type)),Ptr(t));
-    }
-
-	ctx_value(Ptr t, Context& ctx )
+	void ctx_register(Context* ctx)
 	{
-		register_value(ctx,std::type_index(typeid(type)),t);
-    }
+		ctx->registerFactory( ti_, new FactoryImpl<type>(ptr_) );
+	}
 
 private:
-
-    void register_value(Context& ctx, const std::type_index& idx, Ptr ptr)
-    {
-    	ctx.registerFactory(
-    		idx,
-			new FactoryImpl<type>(ptr)
-		);
-    }
+	Ptr ptr_;
+	std::type_index ti_;
 };
 
 
 // syntactic sugar
 
-class Application
+class ApplicationContext : public Context
 {
 public:
 
 	template<class ... Args>
-	Application(Args&& ... args)
-	{}
+	ApplicationContext(Args&& ... args)
+		: Context(nullptr)
+	{
+		// make Context itself injectable
+		std::shared_ptr<Context> ctx = std::shared_ptr<Context>(this, [](Context* c){});
+		registerFactory(std::type_index(typeid(Context)), new FactoryImpl<Context>(ctx));
+
+		register_dependencies<Args&&...>(std::forward<Args&&>(args)...);
+	}
 
 private:
 
-	Application(const Application& rhs) = delete;
+	template<class ... Args>
+	void register_dependencies()
+	{}
+
+	template<class T, class ... Args>
+	void register_dependencies(T&& t,Args&& ... args)
+	{
+		t.ctx_register(this);
+		register_dependencies<Args&&...>(std::forward<Args&&>(args)...);
+	}
+
+
+
+	ApplicationContext(const ApplicationContext& rhs) = delete;
 };
 
-typedef Application components;
 
 
 }
 
+/*
 #define DIY_DEFINE_CONTEXT() \
 namespace diy {            \
                            \
@@ -501,6 +488,6 @@ Context& context()         \
     return ctx;            \
 }                          \
 }
-
+*/
 
 #endif /* INCLUDE_PROMISE_WEB_CTX_H_ */

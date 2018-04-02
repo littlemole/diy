@@ -80,8 +80,7 @@ public:
 	std::shared_ptr<TestController> controller_;
 };
 
-DIY_DEFINE_CONTEXT()
-
+//DIY_DEFINE_CONTEXT()
 
 diy::provider<Logger()> LoggerComponent;
 
@@ -94,8 +93,14 @@ diy::provider<MyApp(TestController)> MyAppComponent;
 
 TEST_F(ProviderTest, ProvideAlwaysInjectsNewInstance) 
 {
+	diy::ApplicationContext ctx {
+		LoggerComponent,
+		TestControllerComponent,
+		MyAppComponent
+	};
+
     {
-        auto myApp = diy::inject<MyApp>();
+        auto myApp = diy::inject<MyApp>(ctx);
         myApp->run(42);
 
         auto tc = myApp->controller_;
@@ -106,7 +111,7 @@ TEST_F(ProviderTest, ProvideAlwaysInjectsNewInstance)
         EXPECT_STREQ("value:42",l->buffer.c_str());
     }
     {
-        auto myApp = diy::inject<MyApp>();
+        auto myApp = diy::inject<MyApp>(ctx);
         myApp->run(42);
 
         auto tc = myApp->controller_;

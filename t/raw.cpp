@@ -84,7 +84,7 @@ private:
 	std::shared_ptr<TestController> controller_;
 };
 
-DIY_DEFINE_CONTEXT()
+//DIY_DEFINE_CONTEXT()
 
 
 
@@ -92,23 +92,25 @@ TEST_F(RawTest, rawApiTest)
 {
 	// low level context setup interface
 
-    diy::context().registerFactory<Logger()>(
+	diy::ApplicationContext ctx;
+
+    ctx.registerFactory<Logger()>(
         new diy::FactoryImpl<Logger>(
 			new diy::ConstructorImpl<Logger()>()
 		)
     );
 
-    diy::context().registerFactory<TestController(Logger)>();
+    ctx.registerFactory<TestController(Logger)>();
 
-    diy::context().registerFactory<MyApp(TestController)>();
+    ctx.registerFactory<MyApp(TestController)>();
 
 	// use context after setup
 
-	auto myApp = diy::inject<MyApp>();
+	auto myApp = diy::inject<MyApp>(ctx);
 	myApp->run(42);
 
-	auto tc = diy::inject<TestController>();
-	auto l = diy::inject<Logger>();
+	auto tc = diy::inject<TestController>(ctx);
+	auto l = diy::inject<Logger>(ctx);
 
 	EXPECT_EQ(1,tc->invocation_count);
 	EXPECT_EQ(1,l->invocation_count);

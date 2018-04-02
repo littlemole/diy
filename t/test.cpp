@@ -89,26 +89,33 @@ private:
 	std::shared_ptr<TestController> controller_;
 };
 
-DIY_DEFINE_CONTEXT()
+//DIY_DEFINE_CONTEXT()
 
 
 diy::singleton<MyApp(TestController)> MyAppComponent;
 
 TEST_F(BasicTest, SimpleDI) 
 {
+	diy::ApplicationContext ctx {
+		LoggerComponent,
+		TestControllerComponent,
+		MyAppComponent
+	};
+
+
 	{
-		auto myApp = diy::inject<MyApp>();
+		auto myApp = diy::inject<MyApp>(ctx);
 		myApp->run(42);
 	}
 	{
-		auto myApp = diy::inject<MyApp>();
+		auto myApp = diy::inject<MyApp>(ctx);
 		myApp->run(43);
 	}
 
 	// assert results
 
-	auto tc = diy::inject<TestController>();
-	auto l = diy::inject<Logger>();
+	auto tc = diy::inject<TestController>(ctx);
+	auto l = diy::inject<Logger>(ctx);
 
 	EXPECT_EQ(2,tc->invocation_count);
 	EXPECT_EQ(2,l->invocation_count);

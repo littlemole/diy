@@ -80,7 +80,7 @@ public:
 	std::shared_ptr<TestController> controller_;
 };
 
-DIY_DEFINE_CONTEXT()
+//DIY_DEFINE_CONTEXT()
 
 
 diy::provider<TestController(Logger)> TestControllerComponent(
@@ -92,15 +92,22 @@ diy::provider<MyApp(TestController)> MyAppComponent;
 
 TEST_F(ProviderTest, ValueMaintainsOwnLifetime) 
 {
+
     // define a shared_ptr to Logger elsewhere:
     auto theLogger = std::make_shared<Logger>();
 
     // add the shared_ptr to context:
     diy::ctx_value<Logger> loggerComponent(theLogger);
+
+    diy::ApplicationContext ctx{
+        loggerComponent,
+        TestControllerComponent,
+        MyAppComponent
+    };
     
     // run test
     {
-        auto myApp = diy::inject<MyApp>();
+        auto myApp = diy::inject<MyApp>(ctx);
         myApp->run(42);
 
         // check results
@@ -113,7 +120,7 @@ TEST_F(ProviderTest, ValueMaintainsOwnLifetime)
     }
     // run test again
     {
-        auto myApp = diy::inject<MyApp>();
+        auto myApp = diy::inject<MyApp>(ctx);
         myApp->run(43);
 
         // check results
