@@ -27,11 +27,10 @@ ENV CXX=${CXX}
 # compile gtest with given compiler
 RUN cd /usr/src/gtest && \
   if [ "$CXX" != "g++" ] ; then \
-  cmake .; \
-  else \
   cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++14 -stdlib=libc++" . ; \
+  else \
+  make \
   fi && \
-  make && \
   ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
 
 RUN mkdir -p /opt/workspace/diy
