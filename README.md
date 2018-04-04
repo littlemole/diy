@@ -84,7 +84,7 @@ within main or even in some init() function called from main.
 ```        
 
 
-# context inheritance and the default context
+# context inheritance
 
 contexts can inherit, for example a local context inheriting from a default context:
 
