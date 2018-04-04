@@ -82,11 +82,11 @@ contexts can inherit, for example a local context inheriting from a default cont
     };
 
     // inherit context
-    Context childCtx(&myContext);
+    Context childCtx(&ctx);
     childCtx->registerFactory<TestComponent(Dependency)>();
 
     // this will resolve:
-    auto tc = inject<TestComponent>(myContext);
+    auto tc = inject<TestComponent>(childCtx);
     tc->some_method_using_dependencies();
 ```
 
