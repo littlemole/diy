@@ -56,8 +56,6 @@ public:
 	{}
 };
 
-//Context& context();
-
 // Constructor API
 
 template<class T>
@@ -233,9 +231,6 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
 }
 
 
-//Context& context();
-
-
 template<class T>
 std::shared_ptr<T> inject(Context& ctx)
 {
@@ -279,23 +274,6 @@ public:
 		return Creator<T(Args...)>::create(ctx, std::forward<VArgs>(args)..., p);
 	}
 };
-
-/*
--- considered evil:
-
-template<class T, class P, class ... Args>
-class Creator<T(P&, Args...)>
-{
-public:
-
-	template<class ... VArgs>
-	static T* create(Context& ctx, VArgs&& ... args)
-	{
-		P* p = ctx.resolve<P>().get();
-		return Creator<T(Args...)>::create(ctx, std::forward<VArgs>(args)..., *p);
-	}
-};
-*/
 
 // Constructor Impl
 
@@ -474,20 +452,6 @@ private:
 	ApplicationContext(const ApplicationContext& rhs) = delete;
 };
 
-
-
-}
-
-/*
-#define DIY_DEFINE_CONTEXT() \
-namespace diy {            \
-                           \
-Context& context()         \
-{                          \
-    static Context ctx(0); \
-    return ctx;            \
-}                          \
-}
-*/
+} // end namespace
 
 #endif /* INCLUDE_PROMISE_WEB_CTX_H_ */
