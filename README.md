@@ -28,7 +28,7 @@ dependency injection is otherwise non-invasive, that is components are plain std
 
         private:
             std::shared_ptr<Dependency> dep_;
-    }
+    };
 ```
 
 # usage
