@@ -14,6 +14,9 @@ with all dependencies as std::shared_ptr&lt;P&gt; has to be provided. Components
 dependency injection is otherwise non-invasive, that is components are plain std=c++ objects.
 
 ```cpp
+
+    // assume class Dependency is defined
+
     class TestComponent
     {
         public:
@@ -30,7 +33,23 @@ dependency injection is otherwise non-invasive, that is components are plain std
 
 # usage
 
-1. declare context
+1. declare context with dependencies, then use it
+
+```cpp
+    int main()
+    {
+        ApplicationContext  ctx {
+            diy::singleton<TestComponent(Dependency)>,
+            diy::singleton<Dependency()> 
+        };
+        
+        auto testComponent = inject<TestComponent>(ctx);
+        testComponent->call_some_method();
+        
+        return 0;
+    }
+```
+
 
 components can be registered as static globals,
 within main or even in some init() function called from main.
