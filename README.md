@@ -93,7 +93,7 @@ contexts can inherit, for example a local context inheriting from a default cont
 
     // dependency declared in default context
     ApplicationContext ctx {
-        singleton<Dependency()> singletonComponent;
+        singleton<Dependency()>
     };
 
     // inherit context
