@@ -29,7 +29,7 @@ RUN cd /usr/src/gtest && \
   if [ "$CXX" != "g++" ] ; then \
   cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++14 -stdlib=libc++" . ; \
   else \
-  make \
+  make; \
   fi && \
   ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
 
