@@ -33,7 +33,7 @@ dependency injection is otherwise non-invasive, that is components are plain std
 
 # usage
 
-1. declare context with dependencies, then use it
+just declare context with dependencies, then use it
 
 ```cpp
     int main()
@@ -57,11 +57,10 @@ within main or even in some init() function called from main.
 ### as singleton
 
 ```cpp
-        // declare as global statics, in main or in some 
-        // init() function called from main
+        // singleton<T> will return always the same instance for this context
         ApplicationContext  ctx {
-            diy::singleton<TestComponent(Dependency)> testComponent,
-            diy::singleton<Dependency()> dependencyComponent
+            diy::singleton<TestComponent(Dependency)>,
+            diy::singleton<Dependency()> 
         };
 ```
 ### as provider
@@ -69,7 +68,8 @@ within main or even in some init() function called from main.
 ```cpp
         // provider will hand out a new obj for every injection
         ApplicationContext  ctx {
-            diy::provider<TestComponent(Dependency)> testComponent;
+            diy::provider<TestComponent(Dependency)>,
+            ...
         };
 ```
 ### as value
@@ -78,14 +78,10 @@ within main or even in some init() function called from main.
         auto tc = std::make_shared<TestComponent>();
         
         ApplicationContext  ctx {
-            diy::ctx_value<TestComponent> testComponent(&tc);
+            diy::ctx_value<TestComponent>(&tc),
+            ---
         }
 ```        
-3. bootstrap application context and enter the matrix
-```cpp
-    auto tc = inject<TestComponent>(ctx);
-    tc->some_method_using_dependencies();
-```
 
 
 # context inheritance and the default context
