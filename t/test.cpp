@@ -69,9 +69,7 @@ private:
 };
 
 
-diy::singleton<TestController(Logger)> TestControllerComponent(
-	diy::constructor<TestController(Logger)>()
-);
+diy::singleton<TestController(Logger)> TestControllerComponent;
 
 class MyApp
 {

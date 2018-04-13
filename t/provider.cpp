@@ -84,9 +84,7 @@ public:
 
 diy::provider<Logger()> LoggerComponent;
 
-diy::provider<TestController(Logger)> TestControllerComponent(
-	diy::constructor<TestController(Logger)>()
-);
+diy::provider<TestController(Logger)> TestControllerComponent;
 
 diy::provider<MyApp(TestController)> MyAppComponent;
 
