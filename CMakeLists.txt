@@ -75,8 +75,8 @@ target_link_libraries(raw_test gtest diycpp pthread ${STDLIB})
 
 ELSEIF (WIN32)
 
-target_link_libraries(basic_test ${GTEST_LIB} diycpp Ws2_32 Rpcrt4 )
-target_link_libraries(raw_test ${GTEST_LIB} diycpp Ws2_32 Rpcrt4 )
+target_link_libraries(basic_test ${GTEST_LIBS} diycpp Ws2_32 Rpcrt4 )
+target_link_libraries(raw_test ${GTEST_LIBS} diycpp Ws2_32 Rpcrt4 )
 
 ENDIF ()
 
