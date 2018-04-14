@@ -12,7 +12,7 @@ set( GTEST_LIBS debug     ${GTESTD}
 
 ENDIF ()
 
-
+message("${GTEST_LIBS}")
 
 
 set(CMAKE_CXX_STANDARD 14)
