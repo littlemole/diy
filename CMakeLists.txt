@@ -4,7 +4,15 @@ include(CTest)
 
 IF (WIN32)
 find_package(gtest REQUIRED)
+
+find_library(GTESTD gtestd)
+
+set( GTEST_LIBS debug     ${GTESTD}
+                optimized ${GTEST_LIBRARY} )
+
 ENDIF ()
+
+
 
 
 set(CMAKE_CXX_STANDARD 14)
@@ -67,8 +75,8 @@ target_link_libraries(raw_test gtest diycpp pthread ${STDLIB})
 
 ELSEIF (WIN32)
 
-target_link_libraries(basic_test ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
-target_link_libraries(raw_test ${GTEST_LIBRARY} diycpp Ws2_32 Rpcrt4 )
+target_link_libraries(basic_test ${GTEST_LIB} diycpp Ws2_32 Rpcrt4 )
+target_link_libraries(raw_test ${GTEST_LIB} diycpp Ws2_32 Rpcrt4 )
 
 ENDIF ()
 
