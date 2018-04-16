@@ -86,7 +86,7 @@ include_directories(${GTEST_INCLUDE_DIR} )
 # sources
 ############################################
 
-file(GLOB HEADERS "include/diy/*.h")
+file(GLOB_RECURSE HEADERS "include/diy/*.h")
 
 ############################################
 # lib target
