@@ -1,48 +1,41 @@
+############################################
+# preamble
+############################################
 cmake_minimum_required(VERSION 2.8.9)
+cmake_policy(SET CMP0054 NEW)
 project(diycpp)
 include(CTest)
 
-IF (WIN32)
-find_package(gtest REQUIRED)
-
-find_library(GTESTD gtestd)
-
-set( GTEST_LIBS debug     ${GTESTD}
-                optimized ${GTEST_LIBRARY} )
-
-ENDIF ()
-
-message("${GTEST_LIBS}")
-
+############################################
+# c++ std
+############################################
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 ############################################
-# macros
+# debug mode produces libs with d suffix
 ############################################
 
-macro(AddCompilerFlags target flags)
-    get_target_property(CF ${target} COMPILE_FLAGS)
-    if(CF STREQUAL "CF-NOTFOUND")
-        SET(CF "") # set to empty string
-    else()
-        SET(CF "${CF} ") # a space to cleanly separate from existing content
-    endif()
+if(NOT CMAKE_DEBUG_POSTFIX)
+  set(CMAKE_DEBUG_POSTFIX d)
+endif()
 
-    SET(CF "${CF} ${flags}" )
-    set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${CF} )
-endmacro()
+############################################
+# basic dependecies
+############################################
+
+find_package(GTest REQUIRED)
 
 
 ############################################
 # clang support
 ############################################
 
-set(LINKERFLAGS " ")
+set(LINKERFLAGS "")
 set(STDLIB "")
-set(FLAGS " ")
+set(FLAGS "")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(STDLIB "c++abi")
@@ -50,39 +43,84 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(FLAGS "-stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED")
 endif()
 
-set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
+############################################
+# OS support (Linux/Windows)
+############################################
+
+IF (WIN32)
+
+	set(OSLIBS "Ws2_32" "Rpcrt4")
+
+	set(BUILDFLAGS "-await ${FLAGS}")
+
+	set(LIBS ${GTEST_LIBRARIES} ${STDLIB}  )
+
+ ELSEIF (UNIX)
+
+    set(OSLIBS "pthread")
+
+    set(BUILDFLAGS " ${FLAGS}")
+
+    set(LIBS ${GTEST_LIBRARIES} ${STDLIB} )
+
+ENDIF ()
 
 
+
+############################################
+# set linker and compiler flags
+############################################
+
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
+set(CMAKE_CXX_FLAGS  		"${CMAKE_CXX_FLAGS} ${BUILDFLAGS}")
+
+
+############################################
+# include directories
+############################################
 
 include_directories(include)
-include_directories(${GTEST_INCLUDE_DIR})
+include_directories(${GTEST_INCLUDE_DIR} )
 
-file(GLOB HEADERS "include/diycpp/*.h")
+############################################
+# sources
+############################################
+
+file(GLOB HEADERS "include/diy/*.h")
+
+############################################
+# lib target
+############################################
 
 add_library(diycpp INTERFACE)
 target_include_directories(diycpp INTERFACE include/)
 
+############################################
+# tests
+############################################
+
 add_executable(basic_test t/test.cpp)
 add_executable(raw_test t/raw.cpp)
 
-AddCompilerFlags(basic_test ${FLAGS})
-AddCompilerFlags(raw_test ${FLAGS})
+############################################
+# libs for tests
+############################################
 
-IF (UNIX)
+target_link_libraries(basic_test ${LIBS} ${OSLIBS} )
+target_link_libraries(raw_test ${LIBS} ${OSLIBS} )
 
-target_link_libraries(basic_test gtest diycpp pthread ${STDLIB})
-target_link_libraries(raw_test gtest diycpp pthread ${STDLIB})
-
-ELSEIF (WIN32)
-
-target_link_libraries(basic_test ${GTEST_LIBS} diycpp Ws2_32 Rpcrt4 )
-target_link_libraries(raw_test ${GTEST_LIBS} diycpp Ws2_32 Rpcrt4 )
-
-ENDIF ()
+############################################
+# run tests
+############################################
 
 add_test(NAME BasicTest COMMAND basic_test)
 add_test(NAME RawTest COMMAND raw_test)
  
+############################################
+# install rules
+############################################
+
 install(FILES ${HEADERS} DESTINATION include/diycpp)
 
 install(FILES diycpp.pc DESTINATION lib/pkgconfig)
+
