@@ -86,7 +86,7 @@ include_directories(${GTEST_INCLUDE_DIR} )
 # sources
 ############################################
 
-file(GLOB_RECURSE HEADERS "include/diy/*.h")
+file(GLOB_RECURSE HEADERS "include/diycpp/*.h")
 
 ############################################
 # lib target
@@ -119,7 +119,7 @@ add_test(NAME RawTest COMMAND raw_test)
 ############################################
 # install rules
 ############################################
-
+message( "${HEADERS}")
 install(FILES ${HEADERS} DESTINATION include/diycpp)
 
 install(FILES diycpp.pc DESTINATION lib/pkgconfig)
