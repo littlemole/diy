@@ -10,7 +10,7 @@ DEFAULT_OPTS = -std=c++14
 DEFAULT_LIBS = 
 endif
 
-OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
+OPTIONS = -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
 CPPFLAGS = -Wall -I../include $(DEBUG) $(OPTIONS) 
 
 TESTFLAGS = -g
