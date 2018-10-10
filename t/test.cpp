@@ -6,23 +6,23 @@
 #include <string>
 #include <exception>
 #include <functional>
-#include "diycpp/ctx.h"
-  
+#include "diycpp/invoke.h"
+
 class BasicTest : public ::testing::Test {
- protected:
+protected:
 
-  static void SetUpTestCase() {
+	static void SetUpTestCase() {
 
-  }
+	}
 
-  virtual void SetUp() {
-  }
+	virtual void SetUp() {
+	}
 
-  virtual void TearDown() {
-  }
+	virtual void TearDown() {
+	}
 }; // end test setup
 
- 
+
 
 
 class Logger
@@ -51,10 +51,10 @@ public:
 	TestController() {}
 
 	TestController(std::shared_ptr<Logger> logger)
-	: logger_(logger)
+		: logger_(logger)
 	{}
 
-	void handler( int val)
+	void handler(int val)
 	{
 		std::ostringstream oss;
 		oss << "value:" << val;
@@ -78,7 +78,7 @@ public:
 		: controller_(tc)
 	{}
 
-	void run( int value )
+	void run(int value)
 	{
 		controller_->handler(value);
 	}
@@ -92,9 +92,9 @@ private:
 
 diy::singleton<MyApp(TestController)> MyAppComponent;
 
-TEST_F(BasicTest, SimpleDI) 
+TEST_F(BasicTest, SimpleDI)
 {
-	diy::ApplicationContext ctx {
+	diy::ApplicationContext ctx{
 		LoggerComponent,
 		TestControllerComponent,
 		MyAppComponent
@@ -115,16 +115,130 @@ TEST_F(BasicTest, SimpleDI)
 	auto tc = diy::inject<TestController>(ctx);
 	auto l = diy::inject<Logger>(ctx);
 
-	EXPECT_EQ(2,tc->invocation_count);
-	EXPECT_EQ(2,l->invocation_count);
-	EXPECT_STREQ("value:42value:43",l->buffer.c_str());
+	EXPECT_EQ(2, tc->invocation_count);
+	EXPECT_EQ(2, l->invocation_count);
+	EXPECT_STREQ("value:42value:43", l->buffer.c_str());
 }
 
+class DependencyA
+{
+public:
+	DependencyA() : x("its an A!") {}
+	std::string x;
+};
+
+class DependencyB
+{
+public:
+	DependencyB() : x(42) {}
+	int x;
+};
+
+void testFunc(std::shared_ptr<DependencyA> a, std::shared_ptr<DependencyB> b) {
+	std::cout << a->x << " with " << b->x << std::endl;
+}
+
+std::string testFunc2(std::shared_ptr<DependencyA> a, std::shared_ptr<DependencyB> b) {
+	std::ostringstream oss;
+	oss << "with value: " << a->x << " with " << b->x << std::endl;
+	return oss.str();
+}
+
+
+std::string testFunc3(DependencyA& a, DependencyB& b) {
+	std::ostringstream oss;
+	oss << "with refs: " << a.x << " with " << b.x << std::endl;
+	return oss.str();
+}
+
+
+class TestObj
+{
+public:
+
+	std::string testFunc(std::shared_ptr<DependencyA> a, std::shared_ptr<DependencyB> b)
+	{
+		std::ostringstream oss;
+		oss << "with value: " << a->x << " with " << b->x << std::endl;
+		return oss.str();
+	}
+
+	void testFunc2(std::shared_ptr<DependencyA> a, std::shared_ptr<DependencyB> b)
+	{
+		std::cout << "with void: " << a->x << " with " << b->x << std::endl;
+	}
+
+	void testFunc3(DependencyA& a, DependencyB& b)
+	{
+		std::cout << "with ref: " << a.x << " with " << b.x << std::endl;
+	}
+};
+
+
+TEST_F(BasicTest, SimpleInvoke)
+{
+	diy::ApplicationContext ctx{
+		diy::singleton<DependencyA()>(),
+		diy::singleton<DependencyB()>()
+	};
+
+	call(ctx, testFunc);
+
+	std::string s = call(ctx, testFunc2);
+
+	std::cout << s;
+}
+
+
+
+TEST_F(BasicTest, ObjSimpleInvoke)
+{
+	diy::ApplicationContext ctx{
+		diy::singleton<DependencyA()>(),
+		diy::singleton<DependencyB()>()
+	};
+
+	TestObj obj;
+
+	std::string s = call(ctx, obj, &TestObj::testFunc);
+
+	std::cout << s;
+
+	call(ctx, obj, &TestObj::testFunc2);
+
+}
+
+TEST_F(BasicTest, SimpleInvokeRef)
+{
+	diy::ApplicationContext ctx{
+		diy::singleton<DependencyA()>(),
+		diy::singleton<DependencyB()>()
+	};
+
+	std::string s = call(ctx, testFunc3);
+
+	std::cout << s;
+}
+
+TEST_F(BasicTest, ObjSimpleInvokeRef)
+{
+	diy::ApplicationContext ctx{
+		diy::singleton<DependencyA()>(),
+		diy::singleton<DependencyB()>()
+	};
+
+	TestObj obj;
+
+
+	call(ctx, obj, &TestObj::testFunc3);
+
+}
 
 int main(int argc, char **argv)
 {
-    ::testing::InitGoogleTest(&argc, argv);
-    int r = RUN_ALL_TESTS();
+	::testing::InitGoogleTest(&argc, argv);
+	int r = RUN_ALL_TESTS();
 
-    return r;
+	return r;
 }
+
