@@ -62,7 +62,7 @@ public:
 		invocation_count++;
 	}
 
-
+  
 private:
 
 	std::shared_ptr<Logger> logger_;
@@ -231,6 +231,15 @@ TEST_F(BasicTest, ObjSimpleInvokeRef)
 
 
 	call(ctx, obj, &TestObj::testFunc3);
+
+}
+
+
+TEST_F(BasicTest, ObjSimpleAutoFactory)
+{
+	diy::ApplicationContext ctx{};
+
+	auto logger = diy::inject<Logger>(ctx);
 
 }
 

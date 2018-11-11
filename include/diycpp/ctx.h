@@ -194,7 +194,10 @@ public:
 protected:
 
 	template<class T>
-	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx);
+	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr);
+
+	template<class T>
+	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr);
 
     Context( const Context& rhs ) : parentCtx_(0) {}
 
@@ -209,7 +212,30 @@ protected:
 
 
 template<class T>
-std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
+std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<std::is_default_constructible<T>::value>::type*)
+{
+	std::cout << "resolve " << typeid(T).name() << std::endl;
+    // delegate to parent ctx if not avail
+    if( theMap_.count(idx) == 0 )
+    {
+        if ( parentCtx_ != 0 )
+        {
+            return parentCtx_->resolve<T>(idx,ctx);
+        }
+
+		this->registerFactory<T()>();
+    }
+
+    // lookup entity factory and resolve instance
+    return dynamic_cast<FactoryImpl<T>*>(
+        theMap_[idx].get()
+    )
+    ->resolve(ctx);
+}
+
+
+template<class T>
+std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<!std::is_default_constructible<T>::value>::type*)
 {
 	std::cout << "resolve " << typeid(T).name() << std::endl;
     // delegate to parent ctx if not avail
@@ -229,7 +255,6 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx)
     )
     ->resolve(ctx);
 }
-
 
 template<class T>
 std::shared_ptr<T> inject(Context& ctx)
