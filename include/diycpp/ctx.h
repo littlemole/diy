@@ -237,7 +237,8 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,ty
 template<class T>
 std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<!std::is_default_constructible<T>::value>::type*)
 {
-	std::cout << "resolve " << typeid(T).name() << std::endl;
+	//std::cout << "resolve " << typeid(T).name() << std::endl;
+
     // delegate to parent ctx if not avail
     if( theMap_.count(idx) == 0 )
     {
@@ -245,6 +246,7 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,ty
         {
             return parentCtx_->resolve<T>(idx,ctx);
         }
+		
 		std::cout << "error resolving " << typeid(T).name() << std::endl;
         throw ContextEx();
     }
