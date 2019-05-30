@@ -57,7 +57,7 @@ public:
     }
 };
 
-diy::singleton<Logger(),ILogger> LoggerComponent;
+diy::singleton<Logger()>::as<ILogger> LoggerComponent;
 
 
 
@@ -103,7 +103,6 @@ private:
 };
 
 
-//diy::singleton<TestController(ILogger&),IController> TestControllerComponent;
 
 diy::singleton<TestController(ILogger&)>::as<IController> TestControllerComponent;
 
