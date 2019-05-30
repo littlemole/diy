@@ -104,7 +104,7 @@ private:
 
 
 
-diy::singleton<TestController(ILogger&)>::as<IController> TestControllerComponent;
+diy::singleton<TestController(ILogger&)>::as<IController&> TestControllerComponent;
 
 class MyApp
 {

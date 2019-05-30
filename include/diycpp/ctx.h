@@ -366,7 +366,7 @@ class singleton
 public:
 
 	template<class P>
-	using as = singleton<F,P>;
+	using as = singleton<F,typename std::remove_reference<P>::type>;
 
     singleton()
 		: ti_(typeid(I))
@@ -400,7 +400,7 @@ class provider
 public:
 
 	template<class P>
-	using as = provider<F,P>;
+	using as = provider<F,typename std::remove_reference<P>::type>;
 
 	provider()
 		: ti_(typeid(I))
