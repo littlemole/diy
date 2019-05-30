@@ -58,12 +58,11 @@ public:
 
 // Constructor API
 
-template<class T>
 class Constructor
 {
 public:
     virtual ~Constructor() {}
-    virtual T* create(Context& ctx) = 0;
+    virtual void* create(Context& ctx) = 0;
 };
 
 
@@ -82,7 +81,7 @@ class FactoryImpl : public Factory
 {
 public:
 
-	FactoryImpl( Constructor<T>* ctor  )
+	FactoryImpl( Constructor* ctor  )
         : ctor_(ctor)
     {}
 
@@ -98,14 +97,14 @@ public:
     {
         if ( !ptr_.get() )
         {
-            ptr_.reset( ctor_->create(ctx) );
+            ptr_.reset( (T*)(ctor_->create(ctx)) );
         }
         return ptr_;
     }
 
 protected:
     std::shared_ptr<T> ptr_;
-    std::unique_ptr<Constructor<T>> ctor_;
+    std::unique_ptr<Constructor> ctor_;
 };
 
 // Provider impl
@@ -116,13 +115,13 @@ class Provider : public FactoryImpl<T>
 {
 public:
 
-    Provider( Constructor<T>* ctor  )
+    Provider( Constructor* ctor  )
         : FactoryImpl<T>(ctor)
     {}
 
     std::shared_ptr<T> resolve(Context& ctx)
     {
-        return std::shared_ptr<T>(FactoryImpl<T>::ctor_->create(ctx));
+        return std::shared_ptr<T>((T*)(FactoryImpl<T>::ctor_->create(ctx)));
     }
 };
 
@@ -237,7 +236,7 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,ty
 template<class T>
 std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<!std::is_default_constructible<T>::value>::type*)
 {
-	//std::cout << "resolve " << typeid(T).name() << std::endl;
+	std::cout << "resolve " << typeid(T).name() << std::endl;
 
     // delegate to parent ctx if not avail
     if( theMap_.count(idx) == 0 )
@@ -298,7 +297,8 @@ public:
 	template<class ... VArgs>
 	static T* create(Context& ctx, VArgs&& ... args)
 	{
-		std::shared_ptr<P> p = ctx.resolve<P>();
+		typedef typename std::remove_reference<P>::type PT;
+		std::shared_ptr<PT> p = ctx.resolve<PT>();
 		return Creator<T(Args...)>::create(ctx, std::forward<VArgs>(args)..., p);
 	}
 };
@@ -311,13 +311,13 @@ class ConstructorImpl
 };
 
 template<class T>
-class ConstructorImpl<T()> : public Constructor<T>
+class ConstructorImpl<T()> : public Constructor
 {
 public:
 
 	virtual ~ConstructorImpl() {}
 
-    virtual T* create(Context& ctx)
+    virtual void* create(Context& ctx)
     {
         return new T;
     }
@@ -326,7 +326,7 @@ public:
 
 
 template<class T, class P, class ... Args>
-class ConstructorImpl<T(P,Args...)>  : public Constructor<T>
+class ConstructorImpl<T(P,Args...)>  : public Constructor
 {
 public:
 
@@ -334,7 +334,7 @@ public:
 
 	virtual ~ConstructorImpl() {}
 
-    virtual T* create(Context& ctx)
+    virtual void* create(Context& ctx)
     {
         return Creator<T(P,Args...)>::create(ctx);
     }
@@ -357,92 +357,64 @@ ConstructorImpl<T>* constructor()
     return new ConstructorImpl<T>();
 }
 
-template<class I, class T>
-Constructor<I>* constructor(  )
-{
-    return (Constructor<I>*) (new ConstructorImpl<T>());
-}
 
 // ctx register helpers
 
-template<class T>
+template<class F, class I = typename returns<F>::type>
 class singleton
 {
 public:
-	typedef typename returns<T>::type type;
+
+	template<class P>
+	using as = singleton<F,P>;
 
     singleton()
-		: ti_(typeid(type))
+		: ti_(typeid(I))
     {}
 
-	template<class I>
-	singleton()
-		: ti_(typeid(I))
-	{}
+    singleton(std::shared_ptr<I> p)
+		: ti_(typeid(I)), ptr_(p)
+    {}
 
 	void ctx_register(Context* ctx)
 	{
-		ctx->registerFactory( ti_, new FactoryImpl<type>(new ConstructorImpl<T>) );
+		if(ptr_)
+		{
+			ctx->registerFactory( ti_, new FactoryImpl<I>( ptr_ ));
+		}
+		else
+		{
+			ctx->registerFactory( ti_, new FactoryImpl<I>(new ConstructorImpl<F>) );
+		}
 	}
 
 private:	
 	std::type_index ti_;
+	std::shared_ptr<I> ptr_;
 };
 
 
-template<class T>
+template<class F, class I = typename returns<F>::type>
 class provider
 {
 public:
 
-	typedef typename returns<T>::type type;
+	template<class P>
+	using as = provider<F,P>;
 
-	provider()
-		: ti_(typeid(type))
-    {}
-
-	template<class I>
 	provider()
 		: ti_(typeid(I))
-	{}
+    {}
 
 	void ctx_register(Context* ctx)
 	{
-		ctx->registerFactory( ti_, new Provider<type>(new ConstructorImpl<T>) );
+		ctx->registerFactory( ti_, new Provider<I>(new ConstructorImpl<F>) );
 	}
 	
 private:	
 	std::type_index ti_;
 };
 
-
-template<class T>
-class ctx_value
-{
-public:
-
-	typedef T type;	
-	typedef std::shared_ptr<T> Ptr;
-
-	ctx_value(T* t )
-		: ti_(std::type_index(typeid(type))),
-		  ptr_(t )
-    {}
-
-	ctx_value(Ptr t )
-		: ti_(std::type_index(typeid(type))),
-		  ptr_(t )
-	{}
-
-	void ctx_register(Context* ctx)
-	{
-		ctx->registerFactory( ti_, new FactoryImpl<type>(ptr_) );
-	}
-
-private:
-	Ptr ptr_;
-	std::type_index ti_;
-};
 
 
 // syntactic sugar

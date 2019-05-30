@@ -95,7 +95,7 @@ TEST_F(ProviderTest, ValueMaintainsOwnLifetime)
     auto theLogger = std::make_shared<Logger>();
 
     // add the shared_ptr to context:
-    diy::ctx_value<Logger> loggerComponent(theLogger);
+    diy::singleton<Logger()> loggerComponent(theLogger);
 
     diy::ApplicationContext ctx{
         loggerComponent,
