@@ -1,6 +1,8 @@
 #ifndef INCLUDE_PROMISE_WEB_CTX_H_
 #define INCLUDE_PROMISE_WEB_CTX_H_
 
+//! \file ctx.h
+
 #include <type_traits>
 #include <typeindex>
 #include <exception>
@@ -10,12 +12,14 @@
 namespace diy  {
 
 
+//! \private
 // return value of callable
 
 template<class T>
 class returns
 {};
 
+//! \private
 template<class T>
 class returns<T()>
 {
@@ -23,7 +27,7 @@ public:
 	typedef T type;
 };
 
-
+//! \private
 template<class T>
 class returns<T(*)()>
 {
@@ -31,6 +35,7 @@ public:
 	typedef T type;
 };
 
+//! \private
 template<class T, class ... Args>
 class returns<T(Args...)>
 {
@@ -38,7 +43,7 @@ public:
 	typedef T type;
 };
 
-
+//! \private
 template<class T, class ... Args>
 class returns<T(*)(Args...)>
 {
@@ -49,6 +54,7 @@ public:
 
 class Context;
 
+//! \brief Exception thrown if context resolution fails
 class ContextEx : public std::exception 
 {
 public:
@@ -56,7 +62,7 @@ public:
 	{}
 };
 
-// Constructor API
+//! Constructor creates new objects
 
 class Constructor
 {
@@ -67,7 +73,7 @@ public:
 
 
 // Factory API
-
+//! \private
 class Factory
 {
 public:
@@ -76,23 +82,32 @@ public:
 };
 
 
+//! \brief
+//!
+//! FactoryImpl returns context wide singletons
+
 template<class T>
 class FactoryImpl : public Factory
 {
 public:
 
+	//! construct with an explicit Constructor
 	FactoryImpl( Constructor* ctor  )
         : ctor_(ctor)
     {}
 
+    	//! construct from existing shared_ptr
 	FactoryImpl( std::shared_ptr<T> t)
         : ptr_(t)
     {}
 
 
+    	//! default constructor for default constructible T
 	FactoryImpl()
     {}
 
+
+    //! resolve T from context and return std::shared_ptr<T>
     virtual std::shared_ptr<T> resolve(Context& ctx)
     {
         if ( !ptr_.get() )
@@ -107,18 +122,22 @@ protected:
     std::unique_ptr<Constructor> ctor_;
 };
 
-// Provider impl
 
+//! \brief Provider 
+//!
+//! everytime a Provider resolves a T from context, a new shared_ptr<T> will be constructed and returned
 
 template<class T>
 class Provider : public FactoryImpl<T>
 {
 public:
 
+    //! construct Provider with explicit Constructor
     Provider( Constructor* ctor  )
         : FactoryImpl<T>(ctor)
     {}
 
+    //! resolve T from context and return a newly constructed std::shared_ptr<T>
     std::shared_ptr<T> resolve(Context& ctx)
     {
         return std::shared_ptr<T>((T*)(FactoryImpl<T>::ctor_->create(ctx)));
@@ -126,9 +145,9 @@ public:
 };
 
 
-// Context API
 
-/**
+/** \brief Context API
+ *
  * Context implements the main IOC context.
  *
  */
@@ -156,47 +175,52 @@ public:
     {
     }
 
-
-    // resolve instance from context
+    //! resolve instance of type T from default context, returning a std::shared_ptr<T>
     template<class T>
     std::shared_ptr<T> resolve()
     {
         return resolve<T>( std::type_index(typeid(T)),*this );
     }
 
+    //! resolve instance of type T from given context, returning a std::shared_ptr<T>
     template<class T>
     std::shared_ptr<T> resolve(Context& ctx)
     {
         return resolve<T>(std::type_index(typeid(T)), ctx );
     }
 
-	void registerFactory(const std::type_index& idx, Factory* f)
-	{
-		theMap_[idx] = std::unique_ptr<Factory>(f);
-	}
+    //! register a factory that can resolve types of given type index using Factory f
+    void registerFactory(const std::type_index& idx, Factory* f)
+    {
+	theMap_[idx] = std::unique_ptr<Factory>(f);
+    }
 
-	template<class F>
-	void registerFactory(Factory* f)
-	{
 
-		theMap_[std::type_index(typeid(typename returns<F>::type))] = std::unique_ptr<Factory>(f);
-	}
+    //! register a factory that can resolve types of type T using Factory f
+    template<class F>
+    void registerFactory(Factory* f)
+    {
+	theMap_[std::type_index(typeid(typename returns<F>::type))] = std::unique_ptr<Factory>(f);
+    }
 
-	template<class F>
-	void registerFactory();
 
-	void clear()
-	{
-		theMap_.clear();
-	}
+    //! register a Factory that can resolve type T with F = T(Args...)
+    template<class F>
+    void registerFactory();
+
+    //! clear the context
+    void clear()
+    {
+	theMap_.clear();
+    }
 
 protected:
 
-	template<class T>
-	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr);
+    template<class T>
+    std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr);
 
-	template<class T>
-	std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr);
+    template<class T>
+    std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr);
 
     Context( const Context& rhs ) : parentCtx_(0) {}
 
@@ -257,6 +281,7 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,ty
     ->resolve(ctx);
 }
 
+//! helper shortcut to return a std::shared_ptr<T> from Context for type T
 template<class T>
 std::shared_ptr<T> inject(Context& ctx)
 {
@@ -264,6 +289,7 @@ std::shared_ptr<T> inject(Context& ctx)
 }
 
 
+//! helper shortcut to return a std::shared_ptr<T> from Context for type idnex idx
 template<class T>
 std::shared_ptr<T> inject(const std::type_index& idx, Context& ctx)
 {
@@ -271,12 +297,14 @@ std::shared_ptr<T> inject(const std::type_index& idx, Context& ctx)
 }
 
 
-
+//! \private
 template<class T>
 class Creator
 {
 };
 
+
+//! \private
 template<class T>
 class Creator<T()> 
 {
@@ -289,6 +317,8 @@ public:
 	}
 };
 
+
+//! \private
 template<class T, class P, class ... Args>
 class Creator<T(P, Args...)>
 {
@@ -303,19 +333,20 @@ public:
 	}
 };
 
-// Constructor Impl
-
+//! Constructor Implementation
+//! \private
 template<class T>
 class ConstructorImpl
 {
 };
 
+//! Constructor Implementation for a default constructible T with no dependencies
 template<class T>
 class ConstructorImpl<T()> : public Constructor
 {
 public:
 
-	virtual ~ConstructorImpl() {}
+    virtual ~ConstructorImpl() {}
 
     virtual void* create(Context& ctx)
     {
@@ -324,7 +355,7 @@ public:
 };
 
 
-
+//! Constructor Implementation for a T with dependencies
 template<class T, class P, class ... Args>
 class ConstructorImpl<T(P,Args...)>  : public Constructor
 {
@@ -332,7 +363,7 @@ public:
 
     ConstructorImpl() {}
 
-	virtual ~ConstructorImpl() {}
+    virtual ~ConstructorImpl() {}
 
     virtual void* create(Context& ctx)
     {
@@ -351,6 +382,7 @@ void Context::registerFactory()
 	);
 }
 
+//! helper to construct a Constructor from F = T(Args...)
 template<class F>
 ConstructorImpl<F>* constructor()
 {
@@ -358,66 +390,74 @@ ConstructorImpl<F>* constructor()
 }
 
 
-// ctx register helpers
+//! singleton ctx registration helper
+//!
+//! registers a singleton
 
 template<class F, class I = typename returns<F>::type>
 class singleton
 {
 public:
 
-	template<class P>
-	using as = singleton<F,typename std::remove_reference<P>::type>;
+    //! use to register the singleton with a different base class
+    //! used to register by interface instead of implementation class
+    template<class P>
+    using as = singleton<F,typename std::remove_reference<P>::type>;
 
     singleton()
-		: ti_(typeid(I))
+	: ti_(typeid(I))
     {}
 
     singleton(std::shared_ptr<I> p)
-		: ti_(typeid(I)), ptr_(p)
+	: ti_(typeid(I)), ptr_(p)
     {}
 
-	void ctx_register(Context* ctx)
+    void ctx_register(Context* ctx)
+    {
+	if(ptr_)
 	{
-		if(ptr_)
-		{
-			ctx->registerFactory( ti_, new FactoryImpl<I>( ptr_ ));
-		}
-		else
-		{
-			ctx->registerFactory( ti_, new FactoryImpl<I>(new ConstructorImpl<F>) );
-		}
+	    ctx->registerFactory( ti_, new FactoryImpl<I>( ptr_ ));
 	}
+	else
+	{
+	    ctx->registerFactory( ti_, new FactoryImpl<I>(new ConstructorImpl<F>) );
+	}
+    }
 
 private:	
-	std::type_index ti_;
-	std::shared_ptr<I> ptr_;
+    std::type_index ti_;
+    std::shared_ptr<I> ptr_;
 };
 
+
+//! singleton ctx registration helper
+//!
+//! registers a singleton
 
 template<class F, class I = typename returns<F>::type>
 class provider
 {
 public:
 
-	template<class P>
-	using as = provider<F,typename std::remove_reference<P>::type>;
+    template<class P>
+    using as = provider<F,typename std::remove_reference<P>::type>;
 
-	provider()
-		: ti_(typeid(I))
+    provider()
+	: ti_(typeid(I))
     {}
 
-	void ctx_register(Context* ctx)
-	{
-		ctx->registerFactory( ti_, new Provider<I>(new ConstructorImpl<F>) );
-	}
+    void ctx_register(Context* ctx)
+    {
+	ctx->registerFactory( ti_, new Provider<I>(new ConstructorImpl<F>) );
+    }
 	
 private:	
-	std::type_index ti_;
+    std::type_index ti_;
 };
 
 
 
-// syntactic sugar
+//! Application context helper
 
 class ApplicationContext : public Context
 {
