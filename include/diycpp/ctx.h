@@ -2,6 +2,7 @@
 #define INCLUDE_PROMISE_WEB_CTX_H_
 
 //! \file ctx.h
+//! \defgroup api
 
 #include <type_traits>
 #include <typeindex>
@@ -55,6 +56,7 @@ public:
 class Context;
 
 //! \brief Exception thrown if context resolution fails
+//! \ingroup api
 class ContextEx : public std::exception 
 {
 public:
@@ -151,6 +153,7 @@ public:
  * Context implements the main IOC context.
  *
  */
+//! \ingroup api
 
 class Context
 {
@@ -282,6 +285,8 @@ std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,ty
 }
 
 //! helper shortcut to return a std::shared_ptr<T> from Context for type T
+//! \ingroup api
+
 template<class T>
 std::shared_ptr<T> inject(Context& ctx)
 {
@@ -290,6 +295,7 @@ std::shared_ptr<T> inject(Context& ctx)
 
 
 //! helper shortcut to return a std::shared_ptr<T> from Context for type idnex idx
+//! \ingroup api
 template<class T>
 std::shared_ptr<T> inject(const std::type_index& idx, Context& ctx)
 {
@@ -393,6 +399,7 @@ ConstructorImpl<F>* constructor()
 //! singleton ctx registration helper
 //!
 //! registers a singleton
+//! \ingroup api
 
 template<class F, class I = typename returns<F>::type>
 class singleton
@@ -433,6 +440,7 @@ private:
 //! singleton ctx registration helper
 //!
 //! registers a singleton
+//! \ingroup api
 
 template<class F, class I = typename returns<F>::type>
 class provider
@@ -469,6 +477,8 @@ private:
 //!     provider<Session()>
 //! }
 //! \endcode
+//! \ingroup api
+
 class ApplicationContext : public Context
 {
 public:

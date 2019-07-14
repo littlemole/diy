@@ -5,7 +5,8 @@ var indexSectionsWithContent =
   2: "ci",
   3: "cfipr",
   4: "a",
-  5: "d"
+  5: "a",
+  6: "d"
 };
 
 var indexSectionNames =
@@ -15,7 +16,8 @@ var indexSectionNames =
   2: "files",
   3: "functions",
   4: "typedefs",
-  5: "pages"
+  5: "groups",
+  6: "pages"
 };
 
 var indexSectionLabels =
@@ -25,6 +27,7 @@ var indexSectionLabels =
   2: "Files",
   3: "Functions",
   4: "Typedefs",
-  5: "Pages"
+  5: "Modules",
+  6: "Pages"
 };
 
