@@ -6,7 +6,7 @@ c++14
 
 # Doxygen documentation
 
-[doxydocs}(https://littlemole.github.io/diy/index.html)
+[doxydocs](https://littlemole.github.io/diy/index.html)
 
 # install
 
