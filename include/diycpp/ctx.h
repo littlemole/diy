@@ -458,7 +458,17 @@ private:
 
 
 //! Application context helper
-
+//!
+//! typical usage
+//! \code{.cpp}
+//! ApplicationContext ctx
+//! {
+//!     singleton<MyDependency1()>(),
+//!     singleton<MyDependency2())>(),
+//!     singleton<MyComponent(MyDependency1,MyDependency2)>(),
+//!     provider<Session()>
+//! }
+//! \endcode
 class ApplicationContext : public Context
 {
 public:
