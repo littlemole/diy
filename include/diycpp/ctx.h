@@ -216,7 +216,7 @@ void Context::register_singleton()
 
 //! register exisitng value for T 
 //! \ingroup api
-template<class T, class I = T>
+template<class T, class I>
 void Context::register_static( std::shared_ptr<I> i)
 {
     providers_.insert(
@@ -237,29 +237,31 @@ std::shared_ptr<T> Context::resolve()
 }
 
 //! \private
-template<class T, typename
-std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr> std::shared_ptr<T> Context::resolve(Context& ctx) {
-     auto ti = std::type_index(typeid(T));
+template<class T, typename std::enable_if<!std::is_default_constructible<T>::value>::type*> 
+std::shared_ptr<T> Context::resolve(Context& ctx) 
+{
+    auto ti = std::type_index(typeid(T));
 
-     if(providers_.count(ti) == 0)
-     {
-         if(parent_)
-         {
-             return parent_->resolve<T>(ctx);
-         }
+    if(providers_.count(ti) == 0)
+    {
+        if(parent_)
+        {
+            return parent_->resolve<T>(ctx);
+        }
 
-         throw ContextEx();
-     }
+        throw ContextEx();
+    }
 
-     auto& p = providers_[ti];
-     auto a = p->create(ctx);
+    auto& p = providers_[ti];
+    auto a = p->create(ctx);
 
-     return std::any_cast<std::shared_ptr<T>>(a);
+    return std::any_cast<std::shared_ptr<T>>(a);
 }
 
 //! \private
-template<class T, typename
-std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr> std::shared_ptr<T> Context::resolve(Context& ctx) {
+template<class T, typename std::enable_if<std::is_default_constructible<T>::value>::type*> 
+std::shared_ptr<T> Context::resolve(Context& ctx) 
+{
      auto ti = std::type_index(typeid(T));
 
      if(providers_.count(ti) == 0)
