@@ -4,14 +4,18 @@
 //! \file ctx.h
 //! \defgroup api
 
-#include <type_traits>
-#include <typeindex>
-#include <exception>
+#include <any>
 #include <map>
+#include <string>
+#include <sstream>
+#include <iostream>
 #include <memory>
- 
-namespace diy  {
+#include <functional>
+#include <typeindex>
+#include <type_traits>
+#include <exception>
 
+namespace diy  {
 
 //! \private
 // return value of callable
@@ -51,9 +55,6 @@ class returns<T(*)(Args...)>
 public:
 	typedef T type;
 };
- 
-
-class Context;
 
 //! \brief Exception thrown if context resolution fails
 //! \ingroup api
@@ -62,91 +63,10 @@ class ContextEx : public std::exception
 public:
 	ContextEx()
 	{}
-};
+};     
 
-//! Constructor creates new objects
-
-class Constructor
-{
-public:
-    virtual ~Constructor() {}
-    virtual void* create(Context& ctx) = 0;
-};
-
-
-// Factory API
 //! \private
-class Factory
-{
-public:
-    virtual ~Factory() {}
-
-};
-
-
-//! \brief
-//!
-//! FactoryImpl returns context wide singletons
-
-template<class T>
-class FactoryImpl : public Factory
-{
-public:
-
-	//! construct with an explicit Constructor
-	FactoryImpl( Constructor* ctor  )
-        : ctor_(ctor)
-    {}
-
-    	//! construct from existing shared_ptr
-	FactoryImpl( std::shared_ptr<T> t)
-        : ptr_(t)
-    {}
-
-
-    	//! default constructor for default constructible T
-	FactoryImpl()
-    {}
-
-
-    //! resolve T from context and return std::shared_ptr<T>
-    virtual std::shared_ptr<T> resolve(Context& ctx)
-    {
-        if ( !ptr_.get() )
-        {
-            ptr_.reset( (T*)(ctor_->create(ctx)) );
-        }
-        return ptr_;
-    }
-
-protected:
-    std::shared_ptr<T> ptr_;
-    std::unique_ptr<Constructor> ctor_;
-};
-
-
-//! \brief Provider 
-//!
-//! everytime a Provider resolves a T from context, a new shared_ptr<T> will be constructed and returned
-
-template<class T>
-class Provider : public FactoryImpl<T>
-{
-public:
-
-    //! construct Provider with explicit Constructor
-    Provider( Constructor* ctor  )
-        : FactoryImpl<T>(ctor)
-    {}
-
-    //! resolve T from context and return a newly constructed std::shared_ptr<T>
-    std::shared_ptr<T> resolve(Context& ctx)
-    {
-        return std::shared_ptr<T>((T*)(FactoryImpl<T>::ctor_->create(ctx)));
-    }
-};
-
-
+class Provider;
 
 /** \brief Context API
  *
@@ -157,132 +77,208 @@ public:
 
 class Context
 {
+template<class T, class I> friend class Singleton;
 public:
 
-    /**
-     * construct a new IOC Context.
-     */
-    Context() : parentCtx_(0)
-    {
-    }
+    Context()
+        : parent_(nullptr)
+    {}
 
-    /**
-     * construct a new IOC Context inheriting from parent context ctx.
-     */
+    Context(Context* p)
+        : parent_(p)
+    {}
 
-    Context(Context* ctx) : parentCtx_(ctx)
-    {
-    }
-
-    ~Context()
-    {
-    }
-
-    //! resolve instance of type T from default context, returning a std::shared_ptr<T>
-    template<class T>
-    std::shared_ptr<T> resolve()
-    {
-        return resolve<T>( std::type_index(typeid(T)),*this );
-    }
-
-    //! resolve instance of type T from given context, returning a std::shared_ptr<T>
-    template<class T>
-    std::shared_ptr<T> resolve(Context& ctx)
-    {
-        return resolve<T>(std::type_index(typeid(T)), ctx );
-    }
-
-    //! register a factory that can resolve types of given type index using Factory f
-    void registerFactory(const std::type_index& idx, Factory* f)
-    {
-	theMap_[idx] = std::unique_ptr<Factory>(f);
-    }
-
-
-    //! register a factory that can resolve types of type T using Factory f
-    template<class F>
-    void registerFactory(Factory* f)
-    {
-	theMap_[std::type_index(typeid(typename returns<F>::type))] = std::unique_ptr<Factory>(f);
-    }
-
-
-    //! register a Factory that can resolve type T with F = T(Args...)
-    template<class F>
-    void registerFactory();
-
-    //! clear the context
-    void clear()
-    {
-	theMap_.clear();
-    }
-
-protected:
+    virtual ~Context()
+    {}
 
     template<class T>
-    std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr);
+    std::shared_ptr<T> resolve();
 
-    template<class T>
-    std::shared_ptr<T> resolve(const std::type_index& idx, Context& ctx, typename std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr);
+    template<class T, class I = typename returns<T>::type >
+    void register_factory();
 
-    Context( const Context& rhs ) : parentCtx_(0) {}
+    template<class T, class I = typename returns<T>::type>
+    void register_singleton();
 
-    Context& operator=(const Context& rhs)
-    {
-        return *this;
-    }
+    template<class T, class I = T>
+    void register_static( std::shared_ptr<I> i);
 
-    std::map<std::type_index,std::shared_ptr<Factory>> theMap_;
-    Context* parentCtx_;
+private:
+    template<class T, typename std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr>
+    std::shared_ptr<T> resolve(Context& ctx);
+
+    template<class T, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr>
+    std::shared_ptr<T> resolve(Context& ctx);
+
+    Context* parent_;
+
+    std::map<std::type_index,std::unique_ptr<Provider>> providers_; 
 };
 
-
-template<class T>
-std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<std::is_default_constructible<T>::value>::type*)
+//! \private
+class Provider
 {
-	std::cout << "resolve " << typeid(T).name() << std::endl;
-    // delegate to parent ctx if not avail
-    if( theMap_.count(idx) == 0 )
-    {
-        if ( parentCtx_ != 0 )
-        {
-            return parentCtx_->resolve<T>(idx,ctx);
-        }
+public:
+    virtual ~Provider() {}
+    virtual std::any create(Context& ctx) = 0; 
+};
 
-		this->registerFactory<T()>();
-    }
+//! \private
+template<class I, class T>
+class Factory {};
 
-    // lookup entity factory and resolve instance
-    return dynamic_cast<FactoryImpl<T>*>(
-        theMap_[idx].get()
-    )
-    ->resolve(ctx);
+//! \private
+template<class I, class R,class ... Args>
+class Factory<I, R(Args...)> : public Provider 
+{
+public:
+
+     typedef I type;
+
+     virtual std::any create(Context& ctx)
+     {
+         auto a =  std::make_shared<R>( ctx.resolve<typename std::remove_reference<Args>::type>() ...);
+         std::shared_ptr<I> i = a;
+         return std::any( i );
+     }
+};
+
+//! \private
+template<class I, class T>
+class Singleton {};
+
+//! \private
+template<class I, class R,class ... Args>
+class Singleton<I, R(Args...)> : public Provider {
+public:
+
+     typedef I type;
+
+     virtual std::any create(Context& ctx)
+     {
+         if(!singleton_)
+         {
+             singleton_ = std::make_shared<R>( ctx.resolve<typename std::remove_reference<Args>::type>() ...);
+         }
+         return std::any(singleton_);
+     }
+
+private:
+     std::shared_ptr<I> singleton_;
+};
+
+//! \private
+template<class T>
+class Value : public Provider 
+{
+public:
+
+     typedef T type;
+
+     Value(std::shared_ptr<T> t)
+        : value_(t)
+    {}
+
+     virtual std::any create(Context& ctx)
+     {
+         return std::any(value_);
+     }
+
+private:
+     std::shared_ptr<T> value_;
+};
+
+//! register Factory for T with T in form of F(Args...)
+//! \ingroup api
+template<class T, class I>
+void Context::register_factory()
+{
+     providers_.insert(
+         std::make_pair(
+             std::type_index(typeid(I)),
+             new Factory<I,T>
+         )
+     );
+}
+
+//! register Singleton for T with T in form of F(Args...)
+//! \ingroup api
+template<class T,class I>
+void Context::register_singleton()
+{
+     providers_.insert(
+         std::make_pair(
+             std::type_index(typeid(I)),
+             new Singleton<I,T>
+         )
+     );
+}
+
+//! register exisitng value for T 
+//! \ingroup api
+template<class T, class I = T>
+void Context::register_static( std::shared_ptr<I> i)
+{
+    providers_.insert(
+         std::make_pair(
+             std::type_index(typeid(I)),
+             new Value<I>(i)
+         )
+     );
 }
 
 
+//! reseolve a type T from context
+//! \ingroup api
 template<class T>
-std::shared_ptr<T> Context::resolve( const std::type_index& idx, Context& ctx,typename std::enable_if<!std::is_default_constructible<T>::value>::type*)
+std::shared_ptr<T> Context::resolve()
 {
-	std::cout << "resolve " << typeid(T).name() << std::endl;
-
-    // delegate to parent ctx if not avail
-    if( theMap_.count(idx) == 0 )
-    {
-        if ( parentCtx_ != 0 )
-        {
-            return parentCtx_->resolve<T>(idx,ctx);
-        }
-		
-		std::cout << "error resolving " << typeid(T).name() << std::endl;
-        throw ContextEx();
-    }
-
-    // lookup entity factory and resolve instance
-    return dynamic_cast<FactoryImpl<T>*>(
-        theMap_[idx].get()
-    )
-    ->resolve(ctx);
+     return resolve<T>(*this);
 }
+
+//! \private
+template<class T, typename
+std::enable_if<!std::is_default_constructible<T>::value>::type* = nullptr> std::shared_ptr<T> Context::resolve(Context& ctx) {
+     auto ti = std::type_index(typeid(T));
+
+     if(providers_.count(ti) == 0)
+     {
+         if(parent_)
+         {
+             return parent_->resolve<T>(ctx);
+         }
+
+         throw ContextEx();
+     }
+
+     auto& p = providers_[ti];
+     auto a = p->create(ctx);
+
+     return std::any_cast<std::shared_ptr<T>>(a);
+}
+
+//! \private
+template<class T, typename
+std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr> std::shared_ptr<T> Context::resolve(Context& ctx) {
+     auto ti = std::type_index(typeid(T));
+
+     if(providers_.count(ti) == 0)
+     {
+         if(parent_)
+         {
+             return parent_->resolve<T>(ctx);
+         }
+
+         register_singleton<T()>();
+     }
+
+     auto& p = providers_[ti];
+     auto a = p->create(ctx);
+
+     return std::any_cast<std::shared_ptr<T>>(a);
+}
+
+
 
 //! helper shortcut to return a std::shared_ptr<T> from Context for type T
 //! \ingroup api
@@ -293,107 +289,6 @@ std::shared_ptr<T> inject(Context& ctx)
 	return ctx.resolve<T>();
 }
 
-
-//! helper shortcut to return a std::shared_ptr<T> from Context for type idnex idx
-//! \ingroup api
-template<class T>
-std::shared_ptr<T> inject(const std::type_index& idx, Context& ctx)
-{
-	return ctx.resolve<T>(idx);
-}
-
-
-//! \private
-template<class T>
-class Creator
-{
-};
-
-
-//! \private
-template<class T>
-class Creator<T()> 
-{
-public:
-
-	template<class ... Args>
-	static T* create(Context& ctx, Args&& ... args)
-	{
-		return new T(std::forward<Args>(args)...);
-	}
-};
-
-
-//! \private
-template<class T, class P, class ... Args>
-class Creator<T(P, Args...)>
-{
-public:
-
-	template<class ... VArgs>
-	static T* create(Context& ctx, VArgs&& ... args)
-	{
-		typedef typename std::remove_reference<P>::type PT;
-		std::shared_ptr<PT> p = ctx.resolve<PT>();
-		return Creator<T(Args...)>::create(ctx, std::forward<VArgs>(args)..., p);
-	}
-};
-
-//! Constructor Implementation
-//! \private
-template<class T>
-class ConstructorImpl
-{
-};
-
-//! Constructor Implementation for a default constructible T with no dependencies
-template<class T>
-class ConstructorImpl<T()> : public Constructor
-{
-public:
-
-    virtual ~ConstructorImpl() {}
-
-    virtual void* create(Context& ctx)
-    {
-        return new T;
-    }
-};
-
-
-//! Constructor Implementation for a T with dependencies
-template<class T, class P, class ... Args>
-class ConstructorImpl<T(P,Args...)>  : public Constructor
-{
-public:
-
-    ConstructorImpl() {}
-
-    virtual ~ConstructorImpl() {}
-
-    virtual void* create(Context& ctx)
-    {
-        return Creator<T(P,Args...)>::create(ctx);
-    }
-};
-
-
-template<class F>
-void Context::registerFactory()
-{
-	registerFactory<F>(
-		new diy::FactoryImpl<typename returns<F>::type>(
-			new diy::ConstructorImpl<F>()
-		)
-	);
-}
-
-//! helper to construct a Constructor from F = T(Args...)
-template<class F>
-ConstructorImpl<F>* constructor()
-{
-    return new ConstructorImpl<F>();
-}
 
 
 //! singleton ctx registration helper
@@ -412,28 +307,12 @@ public:
     using as = singleton<F,typename std::remove_reference<P>::type>;
 
     singleton()
-	: ti_(typeid(I))
-    {}
-
-    singleton(std::shared_ptr<I> p)
-	: ti_(typeid(I)), ptr_(p)
     {}
 
     void ctx_register(Context* ctx)
     {
-	if(ptr_)
-	{
-	    ctx->registerFactory( ti_, new FactoryImpl<I>( ptr_ ));
-	}
-	else
-	{
-	    ctx->registerFactory( ti_, new FactoryImpl<I>(new ConstructorImpl<F>) );
-	}
+        ctx->register_singleton<F,I>();
     }
-
-private:	
-    std::type_index ti_;
-    std::shared_ptr<I> ptr_;
 };
 
 
@@ -451,18 +330,40 @@ public:
     using as = provider<F,typename std::remove_reference<P>::type>;
 
     provider()
-	: ti_(typeid(I))
     {}
 
     void ctx_register(Context* ctx)
     {
-	ctx->registerFactory( ti_, new Provider<I>(new ConstructorImpl<F>) );
+    	ctx->register_factory<F,I>();
     }
 	
-private:	
-    std::type_index ti_;
 };
 
+//! value ctx registration helper
+//!
+//! registers an existing value
+//! \ingroup api
+
+template<class T, class I = T>
+class value
+{
+public:
+
+    template<class P>
+    using as = value<T,typename std::remove_reference<P>::type>;
+
+    value(std::shared_ptr<T> ptr)
+        : ptr_(ptr)
+    {}
+
+    void ctx_register(Context* ctx)
+    {
+    	ctx->register_static<T,I>(ptr_);
+    }
+
+private:
+    std::shared_ptr<T> ptr_;
+};
 
 
 //! Application context helper
@@ -489,7 +390,7 @@ public:
 	{
 		// make Context itself injectable
 		std::shared_ptr<Context> ctx = std::shared_ptr<Context>(this, [](Context* c){});
-		registerFactory(std::type_index(typeid(Context)), new FactoryImpl<Context>(ctx));
+		register_static<ApplicationContext,Context>(ctx);
 
 		register_dependencies<Args&&...>(std::forward<Args&&>(args)...);
 	}

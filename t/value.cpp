@@ -34,6 +34,7 @@ public:
 
 	void log(const std::string& s)
 	{
+        std::cout << s << std::endl;
 		buffer.append(s);
 		invocation_count++;
 	}
@@ -95,7 +96,7 @@ TEST_F(ProviderTest, ValueMaintainsOwnLifetime)
     auto theLogger = std::make_shared<Logger>();
 
     // add the shared_ptr to context:
-    diy::singleton<Logger()> loggerComponent(theLogger);
+    diy::value<Logger> loggerComponent(theLogger);
 
     diy::ApplicationContext ctx{
         loggerComponent,

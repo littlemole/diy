@@ -94,15 +94,11 @@ TEST_F(RawTest, rawApiTest)
 
 	diy::ApplicationContext ctx;
 
-    ctx.registerFactory<Logger()>(
-        new diy::FactoryImpl<Logger>(
-			new diy::ConstructorImpl<Logger()>()
-		)
-    );
+    ctx.register_singleton<Logger()>();
 
-    ctx.registerFactory<TestController(Logger)>();
+    ctx.register_singleton<TestController(Logger)>();
 
-    ctx.registerFactory<MyApp(TestController)>();
+    ctx.register_factory<MyApp(TestController)>();
 
 	// use context after setup
 
