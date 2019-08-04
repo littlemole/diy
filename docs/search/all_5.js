@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['provider',['provider',['../classdiy_1_1provider.html',1,'diy::provider&lt; F, I &gt;'],['../classdiy_1_1Provider.html',1,'diy::Provider&lt; T &gt;'],['../classdiy_1_1Provider.html#a03a4c0c35668b161bcb31886aed1d62c',1,'diy::Provider::Provider()']]]
+  ['register_5ffactory',['register_factory',['../group__api.html#gae2c7bc396ff88dc30a606a3a4996441b',1,'diy::Context']]],
+  ['register_5fsingleton',['register_singleton',['../group__api.html#ga6c64a578793d0d8129913aef9808c73c',1,'diy::Context']]],
+  ['register_5fstatic',['register_static',['../group__api.html#ga3fdd046c9e1862061f029b42c56fef4a',1,'diy::Context']]],
+  ['resolve',['resolve',['../group__api.html#ga052bcff8487d85783bbea090d3600067',1,'diy::Context']]]
 ];

@@ -1,5 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classdiy_1_1Constructor.html" title="Constructor creates new objects. " alt="" coords="5,46,120,73"/>
-<area shape="rect" id="node2" href="$classdiy_1_1ConstructorImpl_3_01T_07_08_4.html" title="Constructor Implementation for a default constructible T with no dependencies. " alt="" coords="168,5,308,47"/>
-<area shape="rect" id="node3" href="$classdiy_1_1ConstructorImpl_3_01T_07P_00_01Args_8_8_8_08_4.html" title="Constructor Implementation for a T with dependencies. " alt="" coords="168,71,308,112"/>
+<area shape="rect" id="node1" href="$classdiy_1_1Context.html" title="Context API. " alt="" coords="5,5,99,32"/>
+<area shape="rect" id="node2" href="$classdiy_1_1ApplicationContext.html" title="diy::ApplicationContext" alt="" coords="147,5,304,32"/>
 </map>

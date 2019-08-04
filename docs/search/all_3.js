@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['factoryimpl',['FactoryImpl',['../classdiy_1_1FactoryImpl.html',1,'diy::FactoryImpl&lt; T &gt;'],['../classdiy_1_1FactoryImpl.html#ae6ca93bb0ab014afe6ff375150d39285',1,'diy::FactoryImpl::FactoryImpl(Constructor *ctor)'],['../classdiy_1_1FactoryImpl.html#a29c8491b5208e750869861081e4d01dc',1,'diy::FactoryImpl::FactoryImpl(std::shared_ptr&lt; T &gt; t)'],['../classdiy_1_1FactoryImpl.html#a6e71c9e39d065e2665d1a8a67dbf40b4',1,'diy::FactoryImpl::FactoryImpl()']]]
+  ['inject',['inject',['../group__api.html#ga8b30495549342f703606b9ed54c677d3',1,'diy']]],
+  ['inject_5fmodules',['inject_modules',['../structdiy_1_1inject__modules.html',1,'diy']]],
+  ['injector',['Injector',['../classdiy_1_1Injector.html',1,'diy::Injector'],['../classdiy_1_1Injector.html#a0ced0fbd66632922fb338a7f90043a8a',1,'diy::Injector::Injector()']]],
+  ['injector_2eh',['injector.h',['../injector_8h.html',1,'']]]
 ];
