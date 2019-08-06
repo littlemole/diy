@@ -91,15 +91,19 @@ public:
     virtual ~Context()
     {}
 
+    //! reseolve a type T from context
     template<class T>
     std::shared_ptr<T> resolve();
 
+    //! register Factory for T with T in form of F(Args...)
     template<class T, class I = typename returns<T>::type >
     void register_factory();
 
+    //! register Singleton for T with T in form of F(Args...)
     template<class T, class I = typename returns<T>::type>
     void register_singleton();
 
+    //! register exisitng value for T 
     template<class T, class I = T>
     void register_static( std::shared_ptr<I> i);
 
@@ -188,8 +192,7 @@ private:
      std::shared_ptr<T> value_;
 };
 
-//! register Factory for T with T in form of F(Args...)
-//! \ingroup api
+//! \private
 template<class T, class I>
 void Context::register_factory()
 {
@@ -201,8 +204,7 @@ void Context::register_factory()
      );
 }
 
-//! register Singleton for T with T in form of F(Args...)
-//! \ingroup api
+//! \private
 template<class T,class I>
 void Context::register_singleton()
 {
@@ -214,8 +216,7 @@ void Context::register_singleton()
      );
 }
 
-//! register exisitng value for T 
-//! \ingroup api
+//! \private
 template<class T, class I>
 void Context::register_static( std::shared_ptr<I> i)
 {
@@ -228,8 +229,7 @@ void Context::register_static( std::shared_ptr<I> i)
 }
 
 
-//! reseolve a type T from context
-//! \ingroup api
+//! \private
 template<class T>
 std::shared_ptr<T> Context::resolve()
 {
@@ -311,6 +311,7 @@ public:
     singleton()
     {}
 
+    //! \private
     void ctx_register(Context* ctx)
     {
         ctx->register_singleton<F,I>();
@@ -334,6 +335,7 @@ public:
     provider()
     {}
 
+    //! \private
     void ctx_register(Context* ctx)
     {
     	ctx->register_factory<F,I>();
@@ -358,6 +360,7 @@ public:
         : ptr_(ptr)
     {}
 
+    //! \private
     void ctx_register(Context* ctx)
     {
     	ctx->register_static<T,I>(ptr_);
@@ -378,7 +381,7 @@ private:
 //!     singleton<MyDependency2())>(),
 //!     singleton<MyComponent(MyDependency1,MyDependency2)>(),
 //!     provider<Session()>
-//! }
+//! };
 //! \endcode
 //! \ingroup api
 

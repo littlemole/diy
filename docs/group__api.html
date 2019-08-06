@@ -88,18 +88,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8b30495549342f703606b9ed54c677d3"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
 <tr class="memitem:ga8b30495549342f703606b9ed54c677d3"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__api.html#ga8b30495549342f703606b9ed54c677d3">diy::inject</a> (<a class="el" href="classdiy_1_1Context.html">Context</a> &amp;ctx)</td></tr>
 <tr class="separator:ga8b30495549342f703606b9ed54c677d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae2c7bc396ff88dc30a606a3a4996441b"><td class="memTemplParams" colspan="2">template&lt;class T , class I  = typename returns&lt;T&gt;::type&gt; </td></tr>
-<tr class="memitem:gae2c7bc396ff88dc30a606a3a4996441b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__api.html#gae2c7bc396ff88dc30a606a3a4996441b">diy::Context::register_factory</a> ()</td></tr>
-<tr class="separator:gae2c7bc396ff88dc30a606a3a4996441b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6c64a578793d0d8129913aef9808c73c"><td class="memTemplParams" colspan="2">template&lt;class T , class I  = typename returns&lt;T&gt;::type&gt; </td></tr>
-<tr class="memitem:ga6c64a578793d0d8129913aef9808c73c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__api.html#ga6c64a578793d0d8129913aef9808c73c">diy::Context::register_singleton</a> ()</td></tr>
-<tr class="separator:ga6c64a578793d0d8129913aef9808c73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3fdd046c9e1862061f029b42c56fef4a"><td class="memTemplParams" colspan="2">template&lt;class T , class I  = T&gt; </td></tr>
-<tr class="memitem:ga3fdd046c9e1862061f029b42c56fef4a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__api.html#ga3fdd046c9e1862061f029b42c56fef4a">diy::Context::register_static</a> (std::shared_ptr&lt; I &gt; i)</td></tr>
-<tr class="separator:ga3fdd046c9e1862061f029b42c56fef4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga052bcff8487d85783bbea090d3600067"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
-<tr class="memitem:ga052bcff8487d85783bbea090d3600067"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__api.html#ga052bcff8487d85783bbea090d3600067">diy::Context::resolve</a> ()</td></tr>
-<tr class="separator:ga052bcff8487d85783bbea090d3600067"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -121,87 +109,6 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>helper shortcut to return a std::shared_ptr&lt;T&gt; from <a class="el" href="classdiy_1_1Context.html" title="Context API. ">Context</a> for type T </p>
-
-</div>
-</div>
-<a id="gae2c7bc396ff88dc30a606a3a4996441b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae2c7bc396ff88dc30a606a3a4996441b">&#9670;&nbsp;</a></span>register_factory()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T , class I &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void diy::Context::register_factory </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>register Factory for T with T in form of F(Args...) </p>
-
-</div>
-</div>
-<a id="ga6c64a578793d0d8129913aef9808c73c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6c64a578793d0d8129913aef9808c73c">&#9670;&nbsp;</a></span>register_singleton()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T , class I &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void diy::Context::register_singleton </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>register Singleton for T with T in form of F(Args...) </p>
-
-</div>
-</div>
-<a id="ga3fdd046c9e1862061f029b42c56fef4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga3fdd046c9e1862061f029b42c56fef4a">&#9670;&nbsp;</a></span>register_static()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T , class I  = T&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void diy::Context::register_static </td>
-          <td>(</td>
-          <td class="paramtype">std::shared_ptr&lt; I &gt;&#160;</td>
-          <td class="paramname"><em>i</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>register exisitng value for T </p>
-
-</div>
-</div>
-<a id="ga052bcff8487d85783bbea090d3600067"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga052bcff8487d85783bbea090d3600067">&#9670;&nbsp;</a></span>resolve()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">std::shared_ptr&lt; T &gt; diy::Context::resolve </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>reseolve a type T from context </p>
 
 </div>
 </div>
