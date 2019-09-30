@@ -37,7 +37,7 @@ struct reg<0>
 //! Module level Injector
 class Injector
 {
-friend class inject_modules;
+friend struct inject_modules;
 
 public:
 
