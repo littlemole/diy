@@ -2,11 +2,11 @@ DEBUG = -g
 release : override DEBUG = -O3
 
 # if not g++ we assume clang++
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
-DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++20
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts
 
 ifeq ($(CXX),g++)
-DEFAULT_OPTS = -std=c++17
+DEFAULT_OPTS = -std=c++20 -fcoroutines
 DEFAULT_LIBS = 
 endif
 
