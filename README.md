@@ -2,7 +2,7 @@
 do it yourself dependency injection for cpp
 
 # dependencies
-c++14
+c++20
 
 # Doxygen documentation
 
