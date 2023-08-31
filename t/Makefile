@@ -2,11 +2,11 @@ DEBUG = -g
 release : override DEBUG = -O3
 
 # if not g++ we assume clang++
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
-DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++20
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 
 ifeq ($(CXX),g++)
-DEFAULT_OPTS = -std=c++17
+DEFAULT_OPTS = -std=c++20
 DEFAULT_LIBS = 
 endif
 
@@ -17,7 +17,7 @@ TESTFLAGS = -g
 
 TEST_SRC   = .
 TEST_BUILD = ./build
-TEST_LIBS  = /usr/lib/libgtest.a -lpthread $(DEFAULT_LIBS)
+TEST_LIBS  = /usr/local/lib/libgtest.a -lpthread $(DEFAULT_LIBS)
 
 # Objects for the test executable
 TEST_SRCFILESABS = $(shell ls $(TEST_SRC)/*.cpp)

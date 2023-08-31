@@ -1,5 +1,5 @@
 # This is a comment
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 MAINTAINER me <little.mole@oha7.org>
 
 # std dependencies
@@ -15,14 +15,21 @@ ENV CXX=${CXX}
 # compile gtest with given compiler
 RUN cd /usr/src/gtest && \
   if [ "$CXX" = "g++" ] ; then \
-    cmake .; \
+    cmake . -DCMAKE_CXX_FLAGS="-std=c++20"  ; \
   else \
-  cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++14 -stdlib=libc++" . ; \
+  cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++20 -stdlib=libc++" . ; \
   fi && \
   make && \
-  ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
+  ln -s /usr/src/gtest/lib/libgtest.a /usr/local/lib/libgtest.a
 
-RUN mkdir -p /opt/workspace/diy
+#RUN mkdir -p /opt/workspace/diy
+ADD . /usr/local/src/diy
+ADD docker/build.sh /usr/local/bin/build.sh
 
 RUN echo -e $CXX
-CMD ["/bin/bash", "-c", "cd /opt/workspace/diy; make clean; make -e; make -e test; make -e build; make -e install;"]
+#CMD 
+
+RUN /usr/local/bin/build.sh diy
+
+#RUN cd /usr/local/src/diy && make clean &&  make -e && make -e test && make -e build && make -e install
+
