@@ -3,5 +3,5 @@ includedir=${prefix}/include
 
 Name: diycpp
 Description: c++ do it yourself dependency injection
-Version: 0.0.1
-Cflags: -I${includedir} -std=c++14
+Version: 0.0.2
+Cflags: -I${includedir} -std=c++20
