@@ -11,6 +11,8 @@ doxyfile
 .project
 /.settings/
 .vs/
+debug/
+release/
 Release/
 Debug/
 *.db
