@@ -80,7 +80,7 @@ set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${BUILDFLAGS}")
 ############################################
 
 include_directories(include)
-#include_directories(${GTEST_INCLUDE_DIR} )
+include_directories(${GTEST_INCLUDE_DIR} )
 
 ############################################
 # sources
