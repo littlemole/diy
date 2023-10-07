@@ -101,6 +101,7 @@ target_include_directories(diycpp INTERFACE include/)
 
 add_executable(basic_test t/test.cpp)
 add_executable(raw_test t/raw.cpp)
+add_executable(static_test t/test_static.cpp)
 
 ############################################
 # libs for tests
@@ -108,6 +109,7 @@ add_executable(raw_test t/raw.cpp)
 
 target_link_libraries(basic_test ${LIBS} ${OSLIBS} )
 target_link_libraries(raw_test ${LIBS} ${OSLIBS} )
+target_link_libraries(static_test ${LIBS} ${OSLIBS} )
 
 ############################################
 # run tests
@@ -115,6 +117,7 @@ target_link_libraries(raw_test ${LIBS} ${OSLIBS} )
 
 add_test(NAME BasicTest COMMAND basic_test)
 add_test(NAME RawTest COMMAND raw_test)
+add_test(NAME StaticTest COMMAND static_test)
  
 ############################################
 # install rules

@@ -17,6 +17,8 @@
 
 namespace diy  {
 
+class Context;
+
 //! \private
 // return value of callable
 
@@ -55,6 +57,93 @@ class returns<T(*)(Args...)>
 public:
 	typedef T type;
 };
+
+
+namespace detection {
+
+	template <class Default, class AlwaysVoid,
+		template<class...> class Op, class... Args>
+	struct detector {
+		using value_t = std::false_type;
+		using type = Default;
+	};
+
+	template <class Default, template<class...> class Op, class... Args>
+	struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
+		// Note that std::void_t is a C++17 feature
+		using value_t = std::true_type;
+		using type = Op<Args...>;
+	};
+
+	struct nonesuch
+	{
+		nonesuch() = delete;
+		~nonesuch() = delete;
+		nonesuch(nonesuch const&) = delete;
+		void operator=(nonesuch const&) = delete;
+	};
+
+	template <template<class...> class Op, class... Args>
+	using is_detected = typename detector<nonesuch, void, Op, Args...>::value_t;
+
+
+    template<class T>
+    using has_creator_t = decltype(&T::create_instance);
+
+    template<class T>
+    using has_creator = is_detected<has_creator_t, T>;
+
+
+    template <typename T>
+    struct get_signature;
+
+    template <typename R, typename... Args>
+    struct get_signature<R(*)(Args...)> {
+        using type = R(Args...);
+        using r_type = R;
+        using args_types = std::tuple< Args ...>;
+    };
+
+    template<class T>
+    struct is_shared_ptr
+    {
+        constexpr static bool value = false;
+    };
+
+    template<class T>
+    struct is_shared_ptr<std::shared_ptr<T>>
+    {
+        constexpr static bool value = true;
+    };
+
+    template<class T, size_t I = 0>
+    constexpr bool args_are_shared_ptr()
+    {
+        constexpr size_t n = std::tuple_size<T>();
+        if constexpr(I == n ) 
+        {
+            return true;
+        }
+        else
+        {
+            using t = typename std::tuple_element<I, T>::type;
+            if constexpr (is_shared_ptr<t>::value)
+            {
+                return args_are_shared_ptr<T,I+1>();
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    template<class T, class Signature, int I = 0, class ... Args>
+    void deduce_singleton(Context& ctx);
+
+} // end namespace detection
+
 
 //! \brief Exception thrown if context resolution fails
 //! \ingroup api
@@ -246,7 +335,25 @@ std::shared_ptr<T> Context::resolve(Context& ctx)
     {
         if(parent_)
         {
-            return parent_->resolve<T>(ctx);
+            auto ptr = parent_->resolve<T>(ctx);
+            if(ptr) return ptr;
+        }
+
+        if constexpr( detection::has_creator<T>::value)
+        {
+            using Signature = detection::get_signature<decltype(&T::create_instance)>;
+            constexpr bool isShared = detection::args_are_shared_ptr<typename Signature::args_types>();
+            constexpr bool returnsShared = detection::is_shared_ptr<typename Signature::r_type>::value;
+
+            if constexpr( isShared && returnsShared)
+            {
+                detection::deduce_singleton<T,typename Signature::args_types>(*this);
+
+                auto& p = providers_[ti];
+                auto a = p->create(ctx);
+
+                return std::any_cast<std::shared_ptr<T>>(a);
+            }
         }
 
         throw ContextEx();
@@ -268,7 +375,7 @@ std::shared_ptr<T> Context::resolve(Context& ctx)
      {
          if(parent_)
          {
-             return parent_->resolve<T>(ctx);
+             return parent_->resolve<T>(ctx);             
          }
 
          register_singleton<T()>();
@@ -417,6 +524,27 @@ private:
 
 	ApplicationContext(const ApplicationContext& rhs) = delete;
 };
+
+
+namespace detection {
+
+    template<class T, class Signature, int I = 0, class ... Args>
+    void deduce_singleton(Context& ctx)
+    {
+        constexpr size_t n = std::tuple_size<Signature>();
+        if constexpr(I == n ) 
+        {
+            ctx.register_singleton<T(Args...)>();
+        }
+        else
+        {
+            using t = typename std::tuple_element<I, Signature>::type::element_type;
+            deduce_singleton<T,Signature,I+1,Args...,t>(ctx);
+        }
+    }
+
+} // end namespace detection
+
 
 } // end namespace
 
