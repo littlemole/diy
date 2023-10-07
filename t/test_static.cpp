@@ -39,8 +39,6 @@ public:
 	}
 };
 
-//diy::singleton<Logger()> LoggerComponent;
-
 
 class TestController
 {
@@ -72,7 +70,6 @@ private:
 };
 
 
-//diy::singleton<TestController(Logger)> TestControllerComponent;
 
 class MyApp
 {
@@ -95,10 +92,6 @@ private:
 	std::shared_ptr<TestController> controller_;
 };
 
-//DIY_DEFINE_CONTEXT()
-
-
-//diy::singleton<MyApp(TestController)> MyAppComponent;
 
 TEST_F(StaticTest, SimpleDI)
 {
@@ -122,9 +115,9 @@ TEST_F(StaticTest, SimpleDI)
     
 	auto l = diy::inject<Logger>(ctx);
 
-//	EXPECT_EQ(2, tc->invocation_count);
-//	EXPECT_EQ(2, l->invocation_count);
-//	EXPECT_STREQ("value:42value:43", l->buffer.c_str());
+	EXPECT_EQ(2, tc->invocation_count);
+	EXPECT_EQ(2, l->invocation_count);
+	EXPECT_STREQ("value:42value:43", l->buffer.c_str());
 }
 
 class DependencyA

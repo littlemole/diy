@@ -139,7 +139,7 @@ namespace detection {
         return false;
     }
 
-    template<class T, class Signature, int I = 0, class ... Args>
+    template<class T, class IFace, class Signature, int I = 0, class ... Args>
     void deduce_singleton(Context& ctx);
 
 } // end namespace detection
@@ -347,7 +347,7 @@ std::shared_ptr<T> Context::resolve(Context& ctx)
 
             if constexpr( isShared && returnsShared)
             {
-                detection::deduce_singleton<T,typename Signature::args_types>(*this);
+                detection::deduce_singleton<T,typename Signature::r_type::element_type, typename Signature::args_types>(*this);
 
                 auto& p = providers_[ti];
                 auto a = p->create(ctx);
@@ -425,6 +425,33 @@ public:
     }
 };
 
+//! singleton component ctx registration helper
+//!
+//! registers a singleton for a type with a static create_instance factory method
+//! dependencies will be deduced from factory method signature
+//! \ingroup api
+
+template<class T>
+class component
+{
+public:
+
+    component()
+    {}
+
+    //! \private
+    void ctx_register(Context* ctx)
+    {
+        using Signature = detection::get_signature<decltype(&T::create_instance)>;
+        constexpr bool isShared = detection::args_are_shared_ptr<typename Signature::args_types>();
+        constexpr bool returnsShared = detection::is_shared_ptr<typename Signature::r_type>::value;
+
+        if constexpr( isShared && returnsShared)
+        {
+            detection::deduce_singleton<T,typename Signature::r_type::element_type, typename Signature::args_types>(*ctx);
+        }
+    }
+};
 
 //! singleton ctx registration helper
 //!
@@ -528,18 +555,18 @@ private:
 
 namespace detection {
 
-    template<class T, class Signature, int I = 0, class ... Args>
+    template<class T, class IFace, class Signature, int I = 0, class ... Args>
     void deduce_singleton(Context& ctx)
     {
         constexpr size_t n = std::tuple_size<Signature>();
         if constexpr(I == n ) 
         {
-            ctx.register_singleton<T(Args...)>();
+            ctx.register_singleton<T(Args...), IFace>();
         }
         else
         {
             using t = typename std::tuple_element<I, Signature>::type::element_type;
-            deduce_singleton<T,Signature,I+1,Args...,t>(ctx);
+            deduce_singleton<T,IFace,Signature,I+1,Args...,t>(ctx);
         }
     }
 
