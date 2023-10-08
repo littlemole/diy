@@ -15,6 +15,9 @@ ENV CXX=${CXX}
 ARG BUILDCHAIN
 ENV BUILDCHAIN=${BUILDCHAIN}
 
+ARG WITH_TEST=On
+ENV WITH_TEST=${WITH_TEST}
+
 # compile gtest with given compiler
 RUN cd /usr/src/gtest && \
   if [ "$BUILDCHAIN" = "make" ] ; then \

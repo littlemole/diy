@@ -8,6 +8,7 @@ project(diycpp)
 include(CTest)
 set(VERSION 0.0.12)
 
+option(WITH_TEST "run tests (default:on)" ON)
 
 ############################################
 # c++ std
@@ -71,7 +72,7 @@ set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${FLAGS}")
 ############################################
 # gtest & jsoncpp
 ############################################
-if(UNIX)
+if(UNIX AND WITH_TEST)
 
     include(FetchContent)
 
@@ -109,7 +110,9 @@ message("+++++++++++++++++")
 ############################################
 
 include_directories(include)
-include_directories(${GTEST_INCLUDE_DIR} )
+if(WIN32 OR (WITH_TEST) )
+    include_directories(${GTEST_INCLUDE_DIR} )
+endif()
 
 ############################################
 # sources
@@ -127,6 +130,8 @@ target_include_directories(diycpp INTERFACE include/)
 ############################################
 # tests
 ############################################
+
+if(WITH_TEST)
 
 add_executable(basic_test t/test.cpp)
 add_executable(raw_test t/raw.cpp)
@@ -156,7 +161,9 @@ add_test(NAME StaticTest COMMAND static_test)
 add_test(NAME IFaceTest COMMAND iface_test)
 add_test(NAME IFaceStaticTest COMMAND iface_static_test)
 add_test(NAME ValueTest COMMAND value_test)
- 
+
+endif()
+
 ############################################
 # install rules
 ############################################
