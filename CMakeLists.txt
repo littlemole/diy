@@ -28,13 +28,6 @@ endif()
 
 
 ############################################
-# basic dependecies
-############################################
-
-find_package(GTest REQUIRED)
-
-
-############################################
 # clang support
 ############################################
 
@@ -54,15 +47,15 @@ endif()
 
 IF (WIN32)
 
+    find_package(GTest REQUIRED)
+
     set(OSLIBS "Ws2_32" "Rpcrt4")
-    set(BUILDFLAGS "${FLAGS}")
     set(LIBS ${GTEST_LIBRARIES} ${STDLIB}  )
 
 ELSEIF (UNIX)
 
     set(OSLIBS "pthread")
-    set(BUILDFLAGS " ${FLAGS}")
-    set(LIBS ${GTEST_LIBRARIES} ${STDLIB} )
+    set(LIBS ${STDLIB} )
 
 ENDIF()
 
@@ -72,7 +65,43 @@ ENDIF()
 ############################################
 
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
-set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${BUILDFLAGS}")
+set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${FLAGS}")
+
+
+############################################
+# gtest & jsoncpp
+############################################
+if(UNIX)
+
+    include(FetchContent)
+
+    # gtest
+    FetchContent_Declare(
+        googletest
+        # Specify the commit you depend on and update it regularly.
+        URL https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    #FetchContent_MakeAvailable(googletest)
+
+    FetchContent_GetProperties(googletest)
+    if(NOT googletest_POPULATED)
+        FetchContent_Populate(googletest)
+        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+    
+	set( LIBS "gtest" "${LIBS}")
+
+endif()
+
+
+
+message("+++++++++++++++++")
+message("BUILDFLAGS: ${FLAGS}")
+message("LIBS: ${LIBS}")
+message("LDFLAGS: ${LINKER_FLAGS}")
+message("+++++++++++++++++")
 
 
 ############################################
@@ -131,7 +160,7 @@ add_test(NAME ValueTest COMMAND value_test)
 ############################################
 # install rules
 ############################################
-message( "${HEADERS}")
+
 install(FILES ${HEADERS} DESTINATION include/diycpp)
 install(FILES diycpp.pc DESTINATION lib/pkgconfig)
 

@@ -12,15 +12,21 @@ clang libc++-dev libc++abi-dev
 ARG CXX
 ENV CXX=${CXX}
 
+ARG BUILDCHAIN
+ENV BUILDCHAIN=${BUILDCHAIN}
+
 # compile gtest with given compiler
 RUN cd /usr/src/gtest && \
+  if [ "$BUILDCHAIN" = "make" ] ; then \
   if [ "$CXX" = "g++" ] ; then \
     cmake . -DCMAKE_CXX_FLAGS="-std=c++20"  ; \
   else \
   cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++20 -stdlib=libc++" . ; \
   fi && \
   make && \
-  ln -s /usr/src/gtest/lib/libgtest.a /usr/local/lib/libgtest.a
+  cp /usr/src/googletest/googletest/lib/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest.a ; \
+  fi
+
 
 #RUN mkdir -p /opt/workspace/diy
 ADD . /usr/local/src/diy

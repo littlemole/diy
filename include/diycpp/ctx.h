@@ -555,7 +555,7 @@ private:
 
 namespace detection {
 
-    template<class T, class IFace, class Signature, int I = 0, class ... Args>
+    template<class T, class IFace, class Signature, int I , class ... Args>
     void deduce_singleton(Context& ctx)
     {
         constexpr size_t n = std::tuple_size<Signature>();

@@ -44,13 +44,13 @@ remove:
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	
 image: 
-	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX)
+	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
 
 
 # docker stable testing environment
 
 clean-image: 
-	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX)
+	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
 		
 run: image-remove image 
 	docker run --name diypp -d -e CXX=$(CXX) -v "$(PWD):/opt/workspace/diy"  $(IMAGE)
