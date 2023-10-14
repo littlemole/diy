@@ -1,0 +1,187 @@
+{
+    "version": 3,
+    "configurePresets": [
+      {
+        "name": "win32",
+        "description": "windows base preset",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/out/build/${presetName}",
+        "installDir": "${sourceDir}/out/install/${presetName}",
+        "toolchainFile": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "environment": {
+          "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+        },
+        "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Windows"
+        }
+      },
+      {
+        "name": "win-x64-debug",
+        "displayName": "x64 Debug",
+        "description": "Sets debug build type and x64 arch",
+        "inherits": "win32",
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/out/build/x64-Debug",
+        "architecture": {
+          "value": "x64",
+          "strategy": "external"
+        },
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug"
+        }
+      },
+      {
+        "name": "win-x64-release",
+        "displayName": "x64 Release",
+        "description": "Sets release build type",
+        "inherits": "win-x64-debug",
+        "binaryDir": "${sourceDir}/out/build/x64-Release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release"
+        }
+      },
+      {
+        "name": "gcc-debug",
+        "displayName": "gcc Debug",
+        "description": "linux base",
+        "binaryDir": "${sourceDir}/out/build/x64-Debug",
+        "cacheVariables": {
+          "CMAKE_C_COMPILER": "gcc",
+          "CMAKE_CXX_COMPILER": "g++",
+          "CMAKE_BUILD_TYPE": "Debug"
+        },
+        "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Linux"
+        }
+      },
+      {
+        "name": "gcc-release",
+        "displayName": "gcc Release",
+        "description": "Sets release build type",
+        "inherits": "gcc-debug",
+        "binaryDir": "${sourceDir}/out/build/x64-Release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release"
+        }
+      },
+      {
+        "name": "clang-debug",
+        "displayName": "clang Debug",
+        "description": "linux base",
+        "binaryDir": "${sourceDir}/out/build/x64-Debug",
+        "cacheVariables": {
+          "CMAKE_C_COMPILER": "clang",
+          "CMAKE_CXX_COMPILER": "clang++",
+          "CMAKE_BUILD_TYPE": "Debug"
+        },
+        "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Linux"
+        }
+      },
+      {
+        "name": "clang-release",
+        "displayName": "clang Release",
+        "description": "Sets release build type",
+        "inherits": "clang-debug",
+        "binaryDir": "${sourceDir}/out/build/x64-Release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release"
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "gcc-debug",
+        "displayName": "Debug gcc",
+        "configurePreset": "gcc-debug",
+        "description": "Vanilla build gcc debug"
+      },
+      {
+        "name": "gcc-release",
+        "displayName": "Release gcc",
+        "configurePreset": "gcc-release",
+        "description": "Vanilla build gcc release"
+      },
+      {
+        "name": "clang-debug",
+        "displayName": "Debug clang++",
+        "configurePreset": "clang-debug",
+        "description": "Vanilla build clang debug"
+      },
+      {
+        "name": "clang-release",
+        "displayName": "Release clang++",
+        "configurePreset": "clang-release",
+        "description": "Vanilla build clang release"
+      },
+      {
+        "name": "default-build-windows",
+        "displayName": "Default",
+        "configurePreset": "win-x64-debug",
+        "description": "Vanilla build"
+      },
+      {
+        "name": "release-build-windows",
+        "displayName": "Release",
+        "configurePreset": "win-x64-release",
+        "description": "Release build"
+      }
+    ],
+    "testPresets": [
+      {
+        "name": "gcc-debug-test",
+        "description": "Enable output on failure",
+        "configurePreset": "gcc-debug",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "gcc-release-test",
+        "description": "Enable output on failure",
+        "configurePreset": "gcc-release",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "clang-debug-test",
+        "description": "Enable output on failure",
+        "configurePreset": "clang-debug",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "clang-release-test",
+        "description": "Enable output on failure",
+        "configurePreset": "clang-release",
+        "output": {
+          "outputOnFailure": true
+        }
+      },      
+      {
+        "name": "debug-test-windows",
+        "description": "Enable output on failure",
+        "configurePreset": "win-x64-debug",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "release-test-windows",
+        "description": "Enable output on failure",
+        "configurePreset": "win-x64-release",
+        "output": {
+          "outputOnFailure": true
+        }
+      }
+    ]
+  }

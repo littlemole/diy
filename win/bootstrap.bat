@@ -19,8 +19,8 @@ cd ..
 cd ..
 
 
-set CMAKE_TOOLCHAIN_FILE=%~dp0vcpkg\scripts\buildsystems\vcpkg.cmake
-echo CMAKE_TOOLCHAIN_FILE=%CMAKE_TOOLCHAIN_FILE%
+rem set CMAKE_TOOLCHAIN_FILE=%~dp0vcpkg\scripts\buildsystems\vcpkg.cmake
+rem echo CMAKE_TOOLCHAIN_FILE=%CMAKE_TOOLCHAIN_FILE%
 
-cmd /C win\build.bat
+rem cmd /C win\build.bat
 
