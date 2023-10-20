@@ -24,7 +24,6 @@
         "description": "Sets debug build type and x64 arch",
         "inherits": "win32",
         "generator": "Ninja",
-        "binaryDir": "${sourceDir}/out/build/x64-Debug",
         "architecture": {
           "value": "x64",
           "strategy": "external"
@@ -38,7 +37,6 @@
         "displayName": "x64 Release",
         "description": "Sets release build type",
         "inherits": "win-x64-debug",
-        "binaryDir": "${sourceDir}/out/build/x64-Release",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release"
         }
@@ -46,8 +44,8 @@
       {
         "name": "gcc-debug",
         "displayName": "gcc Debug",
-        "description": "linux base",
-        "binaryDir": "${sourceDir}/out/build/x64-Debug",
+        "description": "g++ debug",
+        "binaryDir": "${sourceDir}/out/build/${presetName}",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "gcc",
           "CMAKE_CXX_COMPILER": "g++",
@@ -64,7 +62,6 @@
         "displayName": "gcc Release",
         "description": "Sets release build type",
         "inherits": "gcc-debug",
-        "binaryDir": "${sourceDir}/out/build/x64-Release",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release"
         }
@@ -73,7 +70,7 @@
         "name": "clang-debug",
         "displayName": "clang Debug",
         "description": "linux base",
-        "binaryDir": "${sourceDir}/out/build/x64-Debug",
+        "binaryDir": "${sourceDir}/out/build/${presetName}",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "clang",
           "CMAKE_CXX_COMPILER": "clang++",
@@ -90,7 +87,6 @@
         "displayName": "clang Release",
         "description": "Sets release build type",
         "inherits": "clang-debug",
-        "binaryDir": "${sourceDir}/out/build/x64-Release",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release"
         }
@@ -122,13 +118,13 @@
         "description": "Vanilla build clang release"
       },
       {
-        "name": "default-build-windows",
+        "name": "win-x64-debug",
         "displayName": "Default",
         "configurePreset": "win-x64-debug",
         "description": "Vanilla build"
       },
       {
-        "name": "release-build-windows",
+        "name": "win-x64-release",
         "displayName": "Release",
         "configurePreset": "win-x64-release",
         "description": "Release build"
@@ -136,7 +132,7 @@
     ],
     "testPresets": [
       {
-        "name": "gcc-debug-test",
+        "name": "gcc-debug",
         "description": "Enable output on failure",
         "configurePreset": "gcc-debug",
         "output": {
@@ -144,7 +140,7 @@
         }
       },
       {
-        "name": "gcc-release-test",
+        "name": "gcc-release",
         "description": "Enable output on failure",
         "configurePreset": "gcc-release",
         "output": {
@@ -152,7 +148,7 @@
         }
       },
       {
-        "name": "clang-debug-test",
+        "name": "clang-debug",
         "description": "Enable output on failure",
         "configurePreset": "clang-debug",
         "output": {
@@ -160,7 +156,7 @@
         }
       },
       {
-        "name": "clang-release-test",
+        "name": "clang-release",
         "description": "Enable output on failure",
         "configurePreset": "clang-release",
         "output": {
@@ -168,7 +164,7 @@
         }
       },      
       {
-        "name": "debug-test-windows",
+        "name": "win-x64-debug",
         "description": "Enable output on failure",
         "configurePreset": "win-x64-debug",
         "output": {
@@ -176,7 +172,7 @@
         }
       },
       {
-        "name": "release-test-windows",
+        "name": "win-x64-release",
         "description": "Enable output on failure",
         "configurePreset": "win-x64-release",
         "output": {
