@@ -34,31 +34,27 @@ endif()
 
 set(LINKERFLAGS "")
 set(STDLIB "")
-set(FLAGS "")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(STDLIB "c++abi")
-    set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts")
-    set(FLAGS "-stdlib=libc++ -fcoroutines-ts")
-endif()
-
-############################################
-# OS support (Linux/Windows)
-############################################
-
-IF (WIN32)
-
+if(WIN32)
+    set(FLAGS "/W3")
     find_package(GTest REQUIRED)
 
     set(OSLIBS "Ws2_32" "Rpcrt4")
     set(LIBS ${GTEST_LIBRARIES} ${STDLIB}  )
 
-ELSEIF (UNIX)
+else()
+    set(FLAGS "-Wall -Wextra")
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(STDLIB "c++abi")
+        set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts")
+        set(FLAGS "-stdlib=libc++ -fcoroutines-ts")
+    endif()
 
     set(OSLIBS "pthread")
     set(LIBS ${STDLIB} )
 
-ENDIF()
+endif()
 
 
 ############################################
