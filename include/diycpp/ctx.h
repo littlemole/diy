@@ -272,7 +272,7 @@ public:
         : value_(t)
     {}
 
-     virtual std::any create(Context& ctx)
+     virtual std::any create(Context& /*ctx*/ )
      {
          return std::any(value_);
      }
@@ -528,7 +528,7 @@ public:
 		: Context(nullptr)
 	{
 		// make Context itself injectable
-		std::shared_ptr<Context> ctx = std::shared_ptr<Context>(this, [](Context* c){});
+		std::shared_ptr<Context> ctx = std::shared_ptr<Context>(this, [](Context* ){});
 		register_static<ApplicationContext,Context>(ctx);
 
 		register_dependencies<Args&&...>(std::forward<Args&&>(args)...);
