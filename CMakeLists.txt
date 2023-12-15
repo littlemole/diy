@@ -186,4 +186,11 @@ install(FILES ${diycpp_BINARY_DIR}/diycpp-config.cmake
          DESTINATION lib/diycpp-${VERSION})
 
 
+############################################
+# packaging
+############################################
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+include(package)
+         
 

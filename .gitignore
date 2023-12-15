@@ -31,3 +31,6 @@ ubuntu-xenial-16.04-cloudimg-console.log
 *.vcxproj.filters
 *.vcxproj.user
 diy.tag
+_CPack_Packages
+_install
+_packages
