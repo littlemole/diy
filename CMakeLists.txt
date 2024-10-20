@@ -51,8 +51,8 @@ else()
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(STDLIB "c++abi")
-        set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts")
-        set(FLAGS "-stdlib=libc++ -fcoroutines-ts")
+        set(LINKERFLAGS "-stdlib=libc++")
+        set(FLAGS "-stdlib=libc++")
     endif()
 
     set(OSLIBS "pthread")
